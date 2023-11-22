@@ -72,7 +72,7 @@ func (serviceRegistry ServiceRegistryArrowhead_4_6_1) registerService(serviceDef
 		ProviderSystem: systemDefinition,
 	}
 	payload, err := json.Marshal(reqisterServiceDTO)
-	fmt.Println(string(payload))
+
 	if err != nil {
 		return nil, err
 	}
