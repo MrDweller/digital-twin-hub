@@ -1,5 +1,6 @@
 package digitaltwinmodels
 
 type ServiceDefinition struct {
-	ServiceUri string `json:"serviceUri"`
+	ServiceDefinition string `json:"serviceDefinition"`
+	ServiceUri        string `json:"serviceUri"`
 }

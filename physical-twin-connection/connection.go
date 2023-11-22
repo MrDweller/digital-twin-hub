@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
+	physicaltwinmodels "github.com/MrDweller/digital-twin-hub/physical-twin-models"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -14,16 +15,11 @@ type Connection interface {
 	HandleSensorRequest(serviceDefinition digitaltwinmodels.SensedPropertyModel) (string, error)
 }
 
-type PhysicalTwinConnectionModel struct {
-	ConnectionType  PhysicalTwinConnectionType `json:"connectionType"`
-	ConnectionModel map[string]any             `json:"connectionModel"`
-}
-
-func NewConnection(physicalTwinConnection PhysicalTwinConnectionModel) (Connection, error) {
+func NewConnection(physicalTwinConnection physicaltwinmodels.PhysicalTwinConnectionModel) (Connection, error) {
 	var connection Connection
 
 	switch physicalTwinConnection.ConnectionType {
-	case SIMPLE_COAP:
+	case physicaltwinmodels.SIMPLE_COAP:
 		var simpleCoapConnectionModel SimpleCoapConnectionModel
 		mapstructure.Decode(physicalTwinConnection.ConnectionModel, &simpleCoapConnectionModel)
 		connection = simpleCoapConnectionModel

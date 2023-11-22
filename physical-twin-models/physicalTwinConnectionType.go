@@ -1,4 +1,4 @@
-package physicaltwinconnection
+package physicaltwinmodels
 
 type PhysicalTwinConnectionType string
 

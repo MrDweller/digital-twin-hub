@@ -3,15 +3,15 @@ package manufacturer
 import (
 	"net/http"
 
-	digitaltwin "github.com/MrDweller/digital-twin-hub/digital-twin"
+	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
 	"github.com/gin-gonic/gin"
 )
 
 type Controller struct {
-	service Service
+	service *Service
 }
 
-func NewController(service Service) *Controller {
+func NewController(service *Service) *Controller {
 	controller := &Controller{
 		service: service,
 	}
@@ -20,7 +20,7 @@ func NewController(service Service) *Controller {
 }
 
 func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
-	var digitalTwinModel digitaltwin.DigitalTwinModel
+	var digitalTwinModel digitaltwinmodels.DigitalTwinModel
 	if err := c.BindJSON(&digitalTwinModel); err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return

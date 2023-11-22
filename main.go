@@ -21,5 +21,5 @@ func main() {
 	log.Printf("Starting digital twin framework on: http://%s", url)
 
 	err = manufacturer.RunManufacturerApi(url)
-	panic(err)
+	log.Panic(err)
 }
