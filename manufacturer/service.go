@@ -32,7 +32,11 @@ func NewService() (*Service, error) {
 }
 
 func (service Service) CreateDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel) (*digitaltwinmodels.SystemDefinition, error) {
-	digitalTwin := digitaltwin.NewDigitalTwin(digitalTwinModel, service.digitalTwinRegistryConnection)
+	digitalTwin, err := digitaltwin.NewDigitalTwin(digitalTwinModel, service.digitalTwinRegistryConnection)
+	if err != nil {
+		return nil, err
+	}
+
 	systemDefinition, err := digitalTwin.StartDigitalTwin()
 	if err != nil {
 		return nil, err

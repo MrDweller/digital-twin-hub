@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"time"
@@ -63,6 +64,25 @@ func (serviceRegistry ServiceRegistryArrowhead_4_6_1) RegisterDigitalTwin(digita
 	return nil
 }
 
+func (serviceRegistry ServiceRegistryArrowhead_4_6_1) UnRegisterDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, systemDefinition digitaltwinmodels.SystemDefinition) error {
+	for _, sensedPropertyModel := range digitalTwinModel.SensedProperties {
+		err := serviceRegistry.unRegisterService(sensedPropertyModel.ServiceDefinition, systemDefinition)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	for _, controlCommandModel := range digitalTwinModel.ControlCommands {
+		err := serviceRegistry.unRegisterService(controlCommandModel.ServiceDefinition, systemDefinition)
+		if err != nil {
+			return err
+		}
+
+	}
+	return serviceRegistry.unRegisterSystem(systemDefinition)
+}
+
 func (serviceRegistry ServiceRegistryArrowhead_4_6_1) registerService(serviceDefinition digitaltwinmodels.ServiceDefinition, systemDefinition digitaltwinmodels.SystemDefinition) ([]byte, error) {
 	reqisterServiceDTO := RegisterServiceDTO{
 		ServiceDefinition: serviceDefinition,
@@ -103,6 +123,66 @@ func (serviceRegistry ServiceRegistryArrowhead_4_6_1) registerService(serviceDef
 	}
 
 	return body, nil
+}
+
+func (serviceRegistry ServiceRegistryArrowhead_4_6_1) unRegisterService(serviceDefinition digitaltwinmodels.ServiceDefinition, systemDefinition digitaltwinmodels.SystemDefinition) error {
+	url := fmt.Sprintf("https://"+serviceRegistry.Address+":"+strconv.Itoa(serviceRegistry.Port)+"/serviceregistry/unregister?address=%s&port=%s&service_definition=%s&service_uri=%s&system_name=%s", url.QueryEscape(systemDefinition.Address), url.QueryEscape(strconv.Itoa(systemDefinition.Port)), url.QueryEscape(serviceDefinition.ServiceDefinition), url.QueryEscape(serviceDefinition.ServiceUri), url.QueryEscape(systemDefinition.SystemName))
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	client, err := serviceRegistry.getClient()
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		errorString := fmt.Sprintf("status: %s, body: %s", resp.Status, string(body))
+		return errors.New(errorString)
+	}
+
+	return nil
+}
+
+func (serviceRegistry ServiceRegistryArrowhead_4_6_1) unRegisterSystem(systemDefinition digitaltwinmodels.SystemDefinition) error {
+	url := fmt.Sprintf("https://"+serviceRegistry.Address+":"+strconv.Itoa(serviceRegistry.Port)+"/serviceregistry/unregister-system?address=%s&port=%s&system_name=%s", url.QueryEscape(systemDefinition.Address), url.QueryEscape(strconv.Itoa(systemDefinition.Port)), url.QueryEscape(systemDefinition.SystemName))
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
+
+	client, err := serviceRegistry.getClient()
+	if err != nil {
+		return err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		errorString := fmt.Sprintf("status: %s, body: %s", resp.Status, string(body))
+		return errors.New(errorString)
+	}
+
+	return nil
 }
 
 func (serviceRegistry ServiceRegistryArrowhead_4_6_1) echoServiceRegistry() ([]byte, error) {

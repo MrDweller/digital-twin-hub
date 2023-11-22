@@ -11,6 +11,7 @@ import (
 type DigitalTwinRegistryConnection interface {
 	connect() error
 	RegisterDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, systemDefinition digitaltwinmodels.SystemDefinition) error
+	UnRegisterDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, systemDefinition digitaltwinmodels.SystemDefinition) error
 }
 
 type DigitalTwinRegistryImplementationType string
