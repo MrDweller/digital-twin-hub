@@ -1,4 +1,4 @@
-package physicaltwinmodels
+package models
 
 type PhysicalTwinConnectionModel struct {
 	ConnectionType  PhysicalTwinConnectionType `json:"connectionType"`

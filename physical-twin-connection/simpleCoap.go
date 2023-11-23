@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
+	"github.com/MrDweller/digital-twin-hub/models"
 	"github.com/plgd-dev/go-coap/v3/message"
 	"github.com/plgd-dev/go-coap/v3/udp"
 )
@@ -21,7 +21,7 @@ func (simpleCoapConnectionModel SimpleCoapConnectionModel) connect() error {
 	return nil
 }
 
-func (simpleCoapConnectionModel SimpleCoapConnectionModel) HandleControllCommand(controllCommandModel digitaltwinmodels.ControllCommandModel, commands any) (string, error) {
+func (simpleCoapConnectionModel SimpleCoapConnectionModel) HandleControllCommand(controllCommandModel models.ControllCommandModel, commands any) (string, error) {
 	target := fmt.Sprintf("%s:%d", simpleCoapConnectionModel.Address, simpleCoapConnectionModel.Port)
 	co, err := udp.Dial(target)
 	if err != nil {
@@ -47,7 +47,7 @@ func (simpleCoapConnectionModel SimpleCoapConnectionModel) HandleControllCommand
 	return string(payload), nil
 }
 
-func (simpleCoapConnectionModel SimpleCoapConnectionModel) HandleSensorRequest(sensedPropertyModel digitaltwinmodels.SensedPropertyModel) (string, error) {
+func (simpleCoapConnectionModel SimpleCoapConnectionModel) HandleSensorRequest(sensedPropertyModel models.SensedPropertyModel) (string, error) {
 	target := fmt.Sprintf("%s:%d", simpleCoapConnectionModel.Address, simpleCoapConnectionModel.Port)
 	co, err := udp.Dial(target)
 	if err != nil {

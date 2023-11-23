@@ -3,7 +3,7 @@ package manufacturer
 import (
 	"net/http"
 
-	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
+	"github.com/MrDweller/digital-twin-hub/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +20,7 @@ func NewController(service *Service) *Controller {
 }
 
 func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
-	var digitalTwinModel digitaltwinmodels.DigitalTwinModel
+	var digitalTwinModel models.DigitalTwinModel
 	if err := c.BindJSON(&digitalTwinModel); err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return

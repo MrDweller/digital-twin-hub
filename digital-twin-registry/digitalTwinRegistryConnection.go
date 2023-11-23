@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"os"
 
-	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
+	"github.com/MrDweller/digital-twin-hub/models"
 )
 
 type DigitalTwinRegistryConnection interface {
 	connect() error
-	RegisterDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, systemDefinition digitaltwinmodels.SystemDefinition) error
-	UnRegisterDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, systemDefinition digitaltwinmodels.SystemDefinition) error
+	RegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition models.SystemDefinition) error
+	UnRegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition models.SystemDefinition) error
 }
 
 type DigitalTwinRegistryImplementationType string
@@ -23,10 +23,8 @@ func NewConnection(digitalTwinRegistry DigitalTwinRegistry) (DigitalTwinRegistry
 	var digitalTwinRegistryConnection DigitalTwinRegistryConnection
 
 	switch digitalTwinRegistryImplementationType {
-	case SERVICE_REGISTRY_ARROWHEAD_4_6_1:
-		digitalTwinRegistryConnection = ServiceRegistryArrowhead_4_6_1{
-			DigitalTwinRegistry: digitalTwinRegistry,
-		}
+	case DIGITAL_TWIN_REGISTRY_ARROWHEAD_4_6_1:
+		digitalTwinRegistryConnection = NewDigitalTwinRegistryArrowhead_4_6_1(digitalTwinRegistry)
 		break
 	default:
 		errorString := fmt.Sprintf("the digital twin registry %s has no implementation", digitalTwinRegistryImplementationType)

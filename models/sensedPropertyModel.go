@@ -1,4 +1,4 @@
-package digitaltwinmodels
+package models
 
 type SensedPropertyModel struct {
 	ServiceDefinition

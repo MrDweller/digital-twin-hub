@@ -3,12 +3,12 @@ package digitaltwin
 import (
 	"net/http"
 
-	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
+	"github.com/MrDweller/digital-twin-hub/models"
 	physicaltwinconnection "github.com/MrDweller/digital-twin-hub/physical-twin-connection"
 	"github.com/gin-gonic/gin"
 )
 
-func AddCommandEnpoint(router *gin.Engine, controllCommandModel digitaltwinmodels.ControllCommandModel, connection physicaltwinconnection.Connection) {
+func AddCommandEnpoint(router *gin.Engine, controllCommandModel models.ControllCommandModel, connection physicaltwinconnection.Connection) {
 	router.PUT(controllCommandModel.ServiceUri, func(c *gin.Context) {
 		var commands any
 		c.BindJSON(&commands)

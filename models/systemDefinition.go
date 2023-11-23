@@ -1,4 +1,4 @@
-package digitaltwinmodels
+package models
 
 type SystemDefinition struct {
 	Address    string `json:"address"`

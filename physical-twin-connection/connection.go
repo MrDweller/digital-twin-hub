@@ -4,15 +4,15 @@ import (
 	"errors"
 	"fmt"
 
-	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
-	physicaltwinmodels "github.com/MrDweller/digital-twin-hub/physical-twin-models"
+	"github.com/MrDweller/digital-twin-hub/models"
+	physicaltwinmodels "github.com/MrDweller/digital-twin-hub/models"
 	"github.com/mitchellh/mapstructure"
 )
 
 type Connection interface {
 	connect() error
-	HandleControllCommand(serviceDefinition digitaltwinmodels.ControllCommandModel, commands any) (string, error)
-	HandleSensorRequest(serviceDefinition digitaltwinmodels.SensedPropertyModel) (string, error)
+	HandleControllCommand(serviceDefinition models.ControllCommandModel, commands any) (string, error)
+	HandleSensorRequest(serviceDefinition models.SensedPropertyModel) (string, error)
 }
 
 func NewConnection(physicalTwinConnection physicaltwinmodels.PhysicalTwinConnectionModel) (Connection, error) {

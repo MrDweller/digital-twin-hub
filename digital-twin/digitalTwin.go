@@ -7,21 +7,21 @@ import (
 	"os"
 	"strconv"
 
-	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
 	digitaltwinregistry "github.com/MrDweller/digital-twin-hub/digital-twin-registry"
+	"github.com/MrDweller/digital-twin-hub/models"
 	physicaltwinconnection "github.com/MrDweller/digital-twin-hub/physical-twin-connection"
 
 	"github.com/gin-gonic/gin"
 )
 
 type DigitalTwin struct {
-	DigitalTwinModel    digitaltwinmodels.DigitalTwinModel
+	DigitalTwinModel    models.DigitalTwinModel
 	digitalTwinRegistry digitaltwinregistry.DigitalTwinRegistryConnection
-	systemDefinition    digitaltwinmodels.SystemDefinition
+	systemDefinition    models.SystemDefinition
 	listener            net.Listener
 }
 
-func NewDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection) (*DigitalTwin, error) {
+func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection) (*DigitalTwin, error) {
 	url := fmt.Sprintf("%s:0", os.Getenv("ADDRESS"))
 	listener, err := net.Listen("tcp", url)
 	if err != nil {
@@ -37,7 +37,7 @@ func NewDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, digital
 	if err != nil {
 		return nil, err
 	}
-	systemDefinition := digitaltwinmodels.SystemDefinition{
+	systemDefinition := models.SystemDefinition{
 		Address:    address,
 		Port:       port,
 		SystemName: os.Getenv("SYSTEM_NAME"),
@@ -51,7 +51,7 @@ func NewDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel, digital
 	}, nil
 }
 
-func (digitalTwin *DigitalTwin) StartDigitalTwin() (*digitaltwinmodels.SystemDefinition, error) {
+func (digitalTwin *DigitalTwin) StartDigitalTwin() (*models.SystemDefinition, error) {
 	router := gin.New()
 
 	connection, err := physicaltwinconnection.NewConnection(digitalTwin.DigitalTwinModel.PhysicalTwinConnectionModel)

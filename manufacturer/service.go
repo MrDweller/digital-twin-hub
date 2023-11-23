@@ -5,8 +5,8 @@ import (
 	"strconv"
 
 	digitaltwin "github.com/MrDweller/digital-twin-hub/digital-twin"
-	digitaltwinmodels "github.com/MrDweller/digital-twin-hub/digital-twin-models"
 	digitaltwinregistry "github.com/MrDweller/digital-twin-hub/digital-twin-registry"
+	"github.com/MrDweller/digital-twin-hub/models"
 )
 
 type Service struct {
@@ -14,12 +14,12 @@ type Service struct {
 }
 
 func NewService() (*Service, error) {
-	srPort, err := strconv.Atoi(os.Getenv("SR_PORT"))
+	srPort, err := strconv.Atoi(os.Getenv("DIGITAL_TWIN_REGISTRY_PORT"))
 	if err != nil {
 		return nil, err
 	}
 	digitalTwinRegistryConnection, err := digitaltwinregistry.NewConnection(digitaltwinregistry.DigitalTwinRegistry{
-		Address: os.Getenv("SR_ADDRESS"),
+		Address: os.Getenv("DIGITAL_TWIN_REGISTRY_ADDRESS"),
 		Port:    srPort,
 	})
 	if err != nil {
@@ -31,7 +31,7 @@ func NewService() (*Service, error) {
 	return service, nil
 }
 
-func (service Service) CreateDigitalTwin(digitalTwinModel digitaltwinmodels.DigitalTwinModel) (*digitaltwinmodels.SystemDefinition, error) {
+func (service Service) CreateDigitalTwin(digitalTwinModel models.DigitalTwinModel) (*models.SystemDefinition, error) {
 	digitalTwin, err := digitaltwin.NewDigitalTwin(digitalTwinModel, service.digitalTwinRegistryConnection)
 	if err != nil {
 		return nil, err
