@@ -7,6 +7,7 @@ import (
 	digitaltwin "github.com/MrDweller/digital-twin-hub/digital-twin"
 	digitaltwinregistry "github.com/MrDweller/digital-twin-hub/digital-twin-registry"
 	"github.com/MrDweller/digital-twin-hub/models"
+	serviceModels "github.com/MrDweller/service-registry-connection/models"
 )
 
 type Service struct {
@@ -31,7 +32,7 @@ func NewService() (*Service, error) {
 	return service, nil
 }
 
-func (service Service) CreateDigitalTwin(digitalTwinModel models.DigitalTwinModel) (*models.SystemDefinition, error) {
+func (service Service) CreateDigitalTwin(digitalTwinModel models.DigitalTwinModel) (*serviceModels.SystemDefinition, error) {
 	digitalTwin, err := digitaltwin.NewDigitalTwin(digitalTwinModel, service.digitalTwinRegistryConnection)
 	if err != nil {
 		return nil, err

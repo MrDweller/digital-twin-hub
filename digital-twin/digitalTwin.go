@@ -10,6 +10,7 @@ import (
 	digitaltwinregistry "github.com/MrDweller/digital-twin-hub/digital-twin-registry"
 	"github.com/MrDweller/digital-twin-hub/models"
 	physicaltwinconnection "github.com/MrDweller/digital-twin-hub/physical-twin-connection"
+	serviceModels "github.com/MrDweller/service-registry-connection/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +18,7 @@ import (
 type DigitalTwin struct {
 	DigitalTwinModel    models.DigitalTwinModel
 	digitalTwinRegistry digitaltwinregistry.DigitalTwinRegistryConnection
-	systemDefinition    models.SystemDefinition
+	systemDefinition    serviceModels.SystemDefinition
 	listener            net.Listener
 }
 
@@ -37,7 +38,7 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 	if err != nil {
 		return nil, err
 	}
-	systemDefinition := models.SystemDefinition{
+	systemDefinition := serviceModels.SystemDefinition{
 		Address:    address,
 		Port:       port,
 		SystemName: os.Getenv("SYSTEM_NAME"),
@@ -51,7 +52,7 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 	}, nil
 }
 
-func (digitalTwin *DigitalTwin) StartDigitalTwin() (*models.SystemDefinition, error) {
+func (digitalTwin *DigitalTwin) StartDigitalTwin() (*serviceModels.SystemDefinition, error) {
 	router := gin.New()
 
 	connection, err := physicaltwinconnection.NewConnection(digitalTwin.DigitalTwinModel.PhysicalTwinConnectionModel)

@@ -8,6 +8,7 @@ require (
 )
 
 require (
+	github.com/MrDweller/service-registry-connection v0.0.0-20231124151113-91406a5bbbd9 // indirect
 	github.com/bytedance/sonic v1.10.2 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
 	github.com/chenzhuoyu/iasm v0.9.1 // indirect

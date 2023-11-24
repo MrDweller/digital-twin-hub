@@ -6,12 +6,13 @@ import (
 	"os"
 
 	"github.com/MrDweller/digital-twin-hub/models"
+	serviceModels "github.com/MrDweller/service-registry-connection/models"
 )
 
 type DigitalTwinRegistryConnection interface {
 	connect() error
-	RegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition models.SystemDefinition) error
-	UnRegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition models.SystemDefinition) error
+	RegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition serviceModels.SystemDefinition) error
+	UnRegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition serviceModels.SystemDefinition) error
 }
 
 type DigitalTwinRegistryImplementationType string

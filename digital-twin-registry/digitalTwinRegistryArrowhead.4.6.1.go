@@ -1,8 +1,11 @@
 package digitaltwinregistry
 
 import (
+	"os"
+
 	"github.com/MrDweller/digital-twin-hub/models"
-	serviceregistry "github.com/MrDweller/digital-twin-hub/service-registry"
+	serviceModels "github.com/MrDweller/service-registry-connection/models"
+	serviceregistry "github.com/MrDweller/service-registry-connection/service-registry"
 )
 
 const DIGITAL_TWIN_REGISTRY_ARROWHEAD_4_6_1 DigitalTwinRegistryImplementationType = "digital-twin-registry-arrowhead-4.6.1"
@@ -20,6 +23,11 @@ func NewDigitalTwinRegistryArrowhead_4_6_1(digitalTwinRegistry DigitalTwinRegist
 				Address: digitalTwinRegistry.Address,
 				Port:    digitalTwinRegistry.Port,
 			},
+			CertificateInfo: serviceModels.CertificateInfo{
+				CertFilePath: os.Getenv("CERT_FILE_PATH"),
+				KeyFilePath:  os.Getenv("KEY_FILE_PATH"),
+				Truststore:   os.Getenv("TRUSTSTORE_FILE_PATH"),
+			},
 		},
 	}
 }
@@ -34,7 +42,7 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) connect() error {
 
 }
 
-func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition models.SystemDefinition) error {
+func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition serviceModels.SystemDefinition) error {
 	for _, sensedPropertyModel := range digitalTwinModel.SensedProperties {
 		_, err := digitalTwinRegistry.RegisterService(sensedPropertyModel.ServiceDefinition, systemDefinition)
 		if err != nil {
@@ -54,7 +62,7 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwi
 	return nil
 }
 
-func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) UnRegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition models.SystemDefinition) error {
+func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) UnRegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition serviceModels.SystemDefinition) error {
 	for _, sensedPropertyModel := range digitalTwinModel.SensedProperties {
 		err := digitalTwinRegistry.UnRegisterService(sensedPropertyModel.ServiceDefinition, systemDefinition)
 		if err != nil {

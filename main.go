@@ -8,7 +8,7 @@ import (
 	"syscall"
 
 	"github.com/MrDweller/digital-twin-hub/manufacturer"
-	"github.com/MrDweller/digital-twin-hub/models"
+	serviceModels "github.com/MrDweller/service-registry-connection/models"
 	"github.com/joho/godotenv"
 )
 
@@ -37,7 +37,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	digitalTwinServiceDefinition := models.ServiceDefinition{
+	digitalTwinServiceDefinition := serviceModels.ServiceDefinition{
 		ServiceDefinition: "digital-twin",
 		ServiceUri:        "/digital-twin",
 	}

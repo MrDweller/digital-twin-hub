@@ -3,9 +3,10 @@ package manufacturer
 import (
 	"fmt"
 	"log"
+	"os"
 
-	"github.com/MrDweller/digital-twin-hub/models"
-	serviceregistry "github.com/MrDweller/digital-twin-hub/service-registry"
+	"github.com/MrDweller/service-registry-connection/models"
+	serviceregistry "github.com/MrDweller/service-registry-connection/service-registry"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,6 +32,10 @@ func NewManufacturer(address string, port int, systemName string, serviceRegistr
 	serviceRegistryConnection, err := serviceregistry.NewConnection(serviceregistry.ServiceRegistry{
 		Address: serviceRegistryAddress,
 		Port:    serviceRegistryPort,
+	}, serviceregistry.SERVICE_REGISTRY_ARROWHEAD_4_6_1, models.CertificateInfo{
+		CertFilePath: os.Getenv("CERT_FILE_PATH"),
+		KeyFilePath:  os.Getenv("KEY_FILE_PATH"),
+		Truststore:   os.Getenv("TRUSTSTORE_FILE_PATH"),
 	})
 	if err != nil {
 		return nil, err
