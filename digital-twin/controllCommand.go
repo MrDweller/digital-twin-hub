@@ -9,13 +9,14 @@ import (
 )
 
 func AddCommandEnpoint(router *gin.Engine, controllCommandModel models.ControllCommandModel, connection physicaltwinconnection.Connection) {
-	router.PUT(controllCommandModel.ServiceUri, func(c *gin.Context) {
+	router.POST(controllCommandModel.ServiceUri, func(c *gin.Context) {
 		var commands any
 		c.BindJSON(&commands)
 
 		response, err := connection.HandleControllCommand(controllCommandModel, commands)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+			return
 		}
 
 		c.JSON(http.StatusOK, response)

@@ -11,8 +11,8 @@ import (
 
 type Connection interface {
 	connect() error
-	HandleControllCommand(serviceDefinition models.ControllCommandModel, commands any) (string, error)
-	HandleSensorRequest(serviceDefinition models.SensedPropertyModel) (string, error)
+	HandleControllCommand(serviceDefinition models.ControllCommandModel, commands any) (map[string]any, error)
+	HandleSensorRequest(serviceDefinition models.SensedPropertyModel) (map[string]any, error)
 }
 
 func NewConnection(physicalTwinConnection physicaltwinmodels.PhysicalTwinConnectionModel) (Connection, error) {
