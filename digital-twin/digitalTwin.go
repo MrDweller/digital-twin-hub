@@ -3,11 +3,11 @@ package digitaltwin
 import (
 	"fmt"
 	"net"
-	"net/http"
 	"os"
 	"strconv"
 
 	digitaltwinregistry "github.com/MrDweller/digital-twin-hub/digital-twin-registry"
+	httpserver "github.com/MrDweller/digital-twin-hub/http-server"
 	"github.com/MrDweller/digital-twin-hub/models"
 	physicaltwinconnection "github.com/MrDweller/digital-twin-hub/physical-twin-connection"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
@@ -19,17 +19,29 @@ type DigitalTwin struct {
 	DigitalTwinModel    models.DigitalTwinModel
 	digitalTwinRegistry digitaltwinregistry.DigitalTwinRegistryConnection
 	systemDefinition    serviceModels.SystemDefinition
-	listener            net.Listener
+	server              httpserver.Server
 }
 
 func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection) (*DigitalTwin, error) {
 	url := fmt.Sprintf("%s:0", os.Getenv("ADDRESS"))
-	listener, err := net.Listen("tcp", url)
+
+	connection, err := physicaltwinconnection.NewConnection(digitalTwinModel.PhysicalTwinConnectionModel)
+	if err != nil {
+		return nil, err
+	}
+	router := gin.New()
+	for _, sensedPropertyModel := range digitalTwinModel.SensedProperties {
+		AddSensorEnpoint(router, sensedPropertyModel, connection)
+	}
+	for _, controlCommandModel := range digitalTwinModel.ControlCommands {
+		AddCommandEnpoint(router, controlCommandModel, connection)
+	}
+	server, err := httpserver.NewServer(url, router)
 	if err != nil {
 		return nil, err
 	}
 
-	address, stringPort, err := net.SplitHostPort(listener.Addr().String())
+	address, stringPort, err := net.SplitHostPort(server.Addr())
 	if err != nil {
 		return nil, err
 	}
@@ -48,32 +60,18 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 		DigitalTwinModel:    digitalTwinModel,
 		digitalTwinRegistry: digitalTwinRegistryConnection,
 		systemDefinition:    systemDefinition,
-		listener:            listener,
+		server:              server,
 	}, nil
 }
 
 func (digitalTwin *DigitalTwin) StartDigitalTwin() (*serviceModels.SystemDefinition, error) {
-	router := gin.New()
 
-	connection, err := physicaltwinconnection.NewConnection(digitalTwin.DigitalTwinModel.PhysicalTwinConnectionModel)
+	err := digitalTwin.digitalTwinRegistry.RegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.systemDefinition)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, sensedPropertyModel := range digitalTwin.DigitalTwinModel.SensedProperties {
-		AddSensorEnpoint(router, sensedPropertyModel, connection)
-	}
-	for _, controlCommandModel := range digitalTwin.DigitalTwinModel.ControlCommands {
-		AddCommandEnpoint(router, controlCommandModel, connection)
-	}
-
-	err = digitalTwin.digitalTwinRegistry.RegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.systemDefinition)
-	if err != nil {
-		return nil, err
-	}
-
-	// Start the digital twin's rest api
-	go http.Serve(digitalTwin.listener, router)
+	go digitalTwin.server.StartServer()
 
 	return &digitalTwin.systemDefinition, nil
 }

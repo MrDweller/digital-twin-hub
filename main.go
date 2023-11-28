@@ -18,12 +18,6 @@ func main() {
 		log.Fatalf("Error loading .env file: %s", err)
 	}
 
-	service, err := manufacturer.NewService()
-	if err != nil {
-		log.Panic(err)
-	}
-	controller := manufacturer.NewController(service)
-
 	address := os.Getenv("ADDRESS")
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
@@ -41,17 +35,10 @@ func main() {
 		ServiceDefinition: "digital-twin",
 		ServiceUri:        "/digital-twin",
 	}
-	digitalTwinCreation := manufacturer.Endpoint{
-		ServiceDefinition: digitalTwinServiceDefinition,
-		HttpMethod:        "POST",
-		Handler:           controller.CreateDigitalTwin,
-	}
 
-	endpoints := []manufacturer.Endpoint{
-		digitalTwinCreation,
-	}
-
-	manufacturer, err := manufacturer.NewManufacturer(address, port, systemName, serviceRegistryAddress, serviceRegistryPort, endpoints)
+	manufacturer, err := manufacturer.NewManufacturer(address, port, systemName, serviceRegistryAddress, serviceRegistryPort, []serviceModels.ServiceDefinition{
+		digitalTwinServiceDefinition,
+	})
 	if err != nil {
 		log.Panic(err)
 	}

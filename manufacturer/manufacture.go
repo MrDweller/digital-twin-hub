@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	httpserver "github.com/MrDweller/digital-twin-hub/http-server"
 	"github.com/MrDweller/service-registry-connection/models"
 	serviceregistry "github.com/MrDweller/service-registry-connection/service-registry"
 	"github.com/gin-gonic/gin"
@@ -13,16 +14,10 @@ import (
 type Manufacturer struct {
 	models.SystemDefinition
 	ServiceRegistryConnection serviceregistry.ServiceRegistryConnection
-	Endpoints                 []Endpoint
+	Services                  []models.ServiceDefinition
 }
 
-type Endpoint struct {
-	models.ServiceDefinition
-	HttpMethod string
-	Handler    gin.HandlerFunc
-}
-
-func NewManufacturer(address string, port int, systemName string, serviceRegistryAddress string, serviceRegistryPort int, endpoints []Endpoint) (*Manufacturer, error) {
+func NewManufacturer(address string, port int, systemName string, serviceRegistryAddress string, serviceRegistryPort int, services []models.ServiceDefinition) (*Manufacturer, error) {
 	system := models.SystemDefinition{
 		Address:    address,
 		Port:       port,
@@ -44,7 +39,7 @@ func NewManufacturer(address string, port int, systemName string, serviceRegistr
 	return &Manufacturer{
 		SystemDefinition:          system,
 		ServiceRegistryConnection: serviceRegistryConnection,
-		Endpoints:                 endpoints,
+		Services:                  services,
 	}, nil
 }
 
@@ -52,29 +47,43 @@ func (manufacturer Manufacturer) RunManufacturerApi() error {
 	router := gin.Default()
 
 	manufacturer.setupEnpoints(router)
+	manufacturer.registerServices()
 
 	url := fmt.Sprintf("%s:%d", manufacturer.Address, manufacturer.Port)
 	log.Printf("Starting digital twin framework on: http://%s", url)
 
-	err := router.Run(url)
+	server, err := httpserver.NewServer(url, router)
+	if err != nil {
+		return err
+	}
+	err = server.StartServer()
 	return err
 
 }
 
-func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine) {
-	for _, endpoint := range manufacturer.Endpoints {
-		router.Handle(endpoint.HttpMethod, endpoint.ServiceUri, endpoint.Handler)
+func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine) error {
+	service, err := NewService()
+	if err != nil {
+		log.Panic(err)
+	}
+	controller := NewController(service)
 
-		manufacturer.ServiceRegistryConnection.RegisterService(endpoint.ServiceDefinition, manufacturer.SystemDefinition)
+	router.POST("/digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
 
+	return nil
+}
+
+func (manufacturer Manufacturer) registerServices() {
+	for _, service := range manufacturer.Services {
+		manufacturer.ServiceRegistryConnection.RegisterService(service, manufacturer.SystemDefinition)
 	}
 
 }
 
 func (manufacturer Manufacturer) StopManufacturerApi() error {
 	log.Printf("Unregistering the manufacturer services from the service registry!")
-	for _, endpoint := range manufacturer.Endpoints {
-		err := manufacturer.ServiceRegistryConnection.UnRegisterService(endpoint.ServiceDefinition, manufacturer.SystemDefinition)
+	for _, service := range manufacturer.Services {
+		err := manufacturer.ServiceRegistryConnection.UnRegisterService(service, manufacturer.SystemDefinition)
 		if err != nil {
 			return err
 		}
