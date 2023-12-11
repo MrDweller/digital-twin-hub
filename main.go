@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/MrDweller/digital-twin-hub/database"
 	_ "github.com/MrDweller/digital-twin-hub/docs"
 	"github.com/MrDweller/digital-twin-hub/manufacturer"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
@@ -23,6 +24,11 @@ func main() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file: %s", err)
+	}
+
+	err = database.InitDatabase()
+	if err != nil {
+		log.Panic(err)
 	}
 
 	address := os.Getenv("ADDRESS")
@@ -51,7 +57,7 @@ func main() {
 	}
 
 	go func() {
-		err = manufacturer.RunManufacturerApi()
+		err = manufacturer.RunManufacturer()
 		log.Panic(err)
 
 	}()
@@ -61,7 +67,7 @@ func main() {
 	<-termChan
 	log.Printf("Stopping the digital twin hub!")
 
-	err = manufacturer.StopManufacturerApi()
+	err = manufacturer.StopManufacturer()
 	if err != nil {
 		log.Panic(err)
 	}

@@ -70,6 +70,25 @@ info:
   version: "1.0"
 paths:
   /digital-twin:
+    delete:
+      description: Delete a digital twin based on the given address and port.
+      parameters:
+      - description: address
+        in: query
+        name: address
+        required: true
+        type: string
+      - description: 'port '
+        in: query
+        name: port
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: Delete a digital twin
+      tags:
+      - Management
     post:
       description: Create a new digital twin based on the given JSON object. This
         will create a connection to the physical twin based on the connection info

@@ -17,8 +17,8 @@ import (
 
 type DigitalTwin struct {
 	DigitalTwinModel    models.DigitalTwinModel
+	SystemDefinition    serviceModels.SystemDefinition
 	digitalTwinRegistry digitaltwinregistry.DigitalTwinRegistryConnection
-	systemDefinition    serviceModels.SystemDefinition
 	server              httpserver.Server
 }
 
@@ -60,19 +60,19 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 	return &DigitalTwin{
 		DigitalTwinModel:    digitalTwinModel,
 		digitalTwinRegistry: digitalTwinRegistryConnection,
-		systemDefinition:    systemDefinition,
+		SystemDefinition:    systemDefinition,
 		server:              server,
 	}, nil
 }
 
 func (digitalTwin *DigitalTwin) StartDigitalTwin() (*serviceModels.SystemDefinition, error) {
 
-	err := digitalTwin.digitalTwinRegistry.RegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.systemDefinition)
+	err := digitalTwin.digitalTwinRegistry.RegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.SystemDefinition)
 	if err != nil {
 		return nil, err
 	}
 
 	go digitalTwin.server.StartServer()
 
-	return &digitalTwin.systemDefinition, nil
+	return &digitalTwin.SystemDefinition, nil
 }
