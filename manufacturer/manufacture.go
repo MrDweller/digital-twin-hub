@@ -5,10 +5,13 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/MrDweller/digital-twin-hub/docs"
 	httpserver "github.com/MrDweller/digital-twin-hub/http-server"
 	"github.com/MrDweller/service-registry-connection/models"
 	serviceregistry "github.com/MrDweller/service-registry-connection/service-registry"
 	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 type Manufacturer struct {
@@ -46,11 +49,14 @@ func NewManufacturer(address string, port int, systemName string, serviceRegistr
 func (manufacturer Manufacturer) RunManufacturerApi() error {
 	router := gin.Default()
 
-	manufacturer.setupEnpoints(router)
+	url := fmt.Sprintf("%s:%d", manufacturer.Address, manufacturer.Port)
+
+	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	manufacturer.setupEnpoints(router, url)
 	manufacturer.registerServices()
 
-	url := fmt.Sprintf("%s:%d", manufacturer.Address, manufacturer.Port)
-	log.Printf("Starting digital twin framework on: http://%s", url)
+	log.Printf("Starting digital twin framework on: https://%s", url)
+	log.Printf("Swagger documentation is available on: https://%s", url+"/docs/index.html")
 
 	server, err := httpserver.NewServer(url, router)
 	if err != nil {
@@ -61,7 +67,7 @@ func (manufacturer Manufacturer) RunManufacturerApi() error {
 
 }
 
-func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine) error {
+func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine, url string) error {
 	service, err := NewService()
 	if err != nil {
 		log.Panic(err)

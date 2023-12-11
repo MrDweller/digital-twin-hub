@@ -7,11 +7,18 @@ import (
 	"strconv"
 	"syscall"
 
+	_ "github.com/MrDweller/digital-twin-hub/docs"
 	"github.com/MrDweller/digital-twin-hub/manufacturer"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
 	"github.com/joho/godotenv"
 )
 
+// @title          Digital Twin Hub
+// @version        1.0
+// @description    This page shows the REST interfaces offered by the Digital Twin Hub.
+// @contact.url    https://github.com/MrDweller/digital-twin-hub
+
+// @host      localhost:8080
 func main() {
 	err := godotenv.Load()
 	if err != nil {

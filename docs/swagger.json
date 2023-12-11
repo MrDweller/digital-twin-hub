@@ -1,0 +1,138 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This page shows the REST interfaces offered by the Digital Twin Hub.",
+        "title": "Digital Twin Hub",
+        "contact": {
+            "url": "https://github.com/MrDweller/digital-twin-hub"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "paths": {
+        "/digital-twin": {
+            "post": {
+                "description": "Create a new digital twin based on the given JSON object. This will create a connection to the physical twin based on the connection info given, this will also include generating endpoints to controll and view sensed data.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Management"
+                ],
+                "summary": "Create a new digital twin",
+                "parameters": [
+                    {
+                        "description": "DigitalTwinModel JSON",
+                        "name": "DigitalTwinModel",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/manufacturer.DigitalTwinModelDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/manufacturer.SystemDefinitionDTO"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "manufacturer.ConnectionDTO": {
+            "type": "object",
+            "properties": {
+                "connectionModel": {
+                    "$ref": "#/definitions/manufacturer.ConnectionModelDTO"
+                },
+                "connectionType": {
+                    "type": "string",
+                    "default": "simple-CoAP"
+                }
+            }
+        },
+        "manufacturer.ConnectionModelDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "default": "localhost"
+                },
+                "port": {
+                    "type": "integer",
+                    "default": 5000
+                }
+            }
+        },
+        "manufacturer.ControllPropertiesDTO": {
+            "type": "object",
+            "properties": {
+                "serviceDefinition": {
+                    "type": "string",
+                    "default": "lamp"
+                },
+                "serviceUri": {
+                    "type": "string",
+                    "default": "/lamp"
+                }
+            }
+        },
+        "manufacturer.DigitalTwinModelDTO": {
+            "type": "object",
+            "properties": {
+                "controlCommands": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/manufacturer.ControllPropertiesDTO"
+                    }
+                },
+                "physicalTwinConnection": {
+                    "$ref": "#/definitions/manufacturer.ConnectionDTO"
+                },
+                "sensedProperties": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/manufacturer.SensedPropertiesDTO"
+                    }
+                }
+            }
+        },
+        "manufacturer.SensedPropertiesDTO": {
+            "type": "object",
+            "properties": {
+                "serviceDefinition": {
+                    "type": "string",
+                    "default": "temperature"
+                },
+                "serviceUri": {
+                    "type": "string",
+                    "default": "/temperature"
+                }
+            }
+        },
+        "manufacturer.SystemDefinitionDTO": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "default": "localhost"
+                },
+                "authenticationInfo": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "integer",
+                    "default": 5000
+                },
+                "systemName": {
+                    "type": "string",
+                    "default": "my-digital-twin"
+                }
+            }
+        }
+    }
+}

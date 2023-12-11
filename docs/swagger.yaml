@@ -1,0 +1,95 @@
+definitions:
+  manufacturer.ConnectionDTO:
+    properties:
+      connectionModel:
+        $ref: '#/definitions/manufacturer.ConnectionModelDTO'
+      connectionType:
+        default: simple-CoAP
+        type: string
+    type: object
+  manufacturer.ConnectionModelDTO:
+    properties:
+      address:
+        default: localhost
+        type: string
+      port:
+        default: 5000
+        type: integer
+    type: object
+  manufacturer.ControllPropertiesDTO:
+    properties:
+      serviceDefinition:
+        default: lamp
+        type: string
+      serviceUri:
+        default: /lamp
+        type: string
+    type: object
+  manufacturer.DigitalTwinModelDTO:
+    properties:
+      controlCommands:
+        items:
+          $ref: '#/definitions/manufacturer.ControllPropertiesDTO'
+        type: array
+      physicalTwinConnection:
+        $ref: '#/definitions/manufacturer.ConnectionDTO'
+      sensedProperties:
+        items:
+          $ref: '#/definitions/manufacturer.SensedPropertiesDTO'
+        type: array
+    type: object
+  manufacturer.SensedPropertiesDTO:
+    properties:
+      serviceDefinition:
+        default: temperature
+        type: string
+      serviceUri:
+        default: /temperature
+        type: string
+    type: object
+  manufacturer.SystemDefinitionDTO:
+    properties:
+      address:
+        default: localhost
+        type: string
+      authenticationInfo:
+        type: string
+      port:
+        default: 5000
+        type: integer
+      systemName:
+        default: my-digital-twin
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    url: https://github.com/MrDweller/digital-twin-hub
+  description: This page shows the REST interfaces offered by the Digital Twin Hub.
+  title: Digital Twin Hub
+  version: "1.0"
+paths:
+  /digital-twin:
+    post:
+      description: Create a new digital twin based on the given JSON object. This
+        will create a connection to the physical twin based on the connection info
+        given, this will also include generating endpoints to controll and view sensed
+        data.
+      parameters:
+      - description: DigitalTwinModel JSON
+        in: body
+        name: DigitalTwinModel
+        required: true
+        schema:
+          $ref: '#/definitions/manufacturer.DigitalTwinModelDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/manufacturer.SystemDefinitionDTO'
+      summary: Create a new digital twin
+      tags:
+      - Management
+swagger: "2.0"

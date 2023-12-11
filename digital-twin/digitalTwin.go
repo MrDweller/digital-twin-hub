@@ -51,9 +51,10 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 		return nil, err
 	}
 	systemDefinition := serviceModels.SystemDefinition{
-		Address:    address,
-		Port:       port,
-		SystemName: os.Getenv("SYSTEM_NAME"),
+		Address:            address,
+		Port:               port,
+		SystemName:         os.Getenv("SYSTEM_NAME"),
+		AuthenticationInfo: os.Getenv("AUTHENTICATION_INFO"),
 	}
 
 	return &DigitalTwin{
