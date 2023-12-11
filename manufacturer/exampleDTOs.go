@@ -1,8 +1,10 @@
 package manufacturer
 
 type SensedPropertiesDTO struct {
-	ServiceDefinition string `json:"serviceDefinition" default:"temperature"`
-	ServiceUri        string `json:"serviceUri" default:"/temperature"`
+	ServiceDefinition  string `json:"serviceDefinition" default:"temperature"`
+	ServiceUri         string `json:"serviceUri" default:"/temperature"`
+	SensorEndpointMode string `json:"sensorEndpointMode" default:"INTERVAL_RETRIEVAL"`
+	IntervalTime       int    `json:"intervalTime" default:"10"`
 }
 
 type ControllPropertiesDTO struct {

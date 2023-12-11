@@ -54,7 +54,7 @@ func NewManufacturer(address string, port int, systemName string, serviceRegistr
 }
 
 func (manufacturer Manufacturer) RunManufacturer() error {
-	err := manufacturer.Service.registerAllSavedDigitalTwins()
+	err := manufacturer.Service.startAllSavedDigitalTwins()
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,7 @@ func (manufacturer Manufacturer) StopManufacturer() error {
 		return err
 	}
 
-	err = manufacturer.Service.unregisterAllSavedDigitalTwins()
+	err = manufacturer.Service.stopAllSavedDigitalTwins()
 	if err != nil {
 		return err
 	}

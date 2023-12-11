@@ -11,18 +11,20 @@ import (
 	"github.com/MrDweller/digital-twin-hub/models"
 	physicaltwinconnection "github.com/MrDweller/digital-twin-hub/physical-twin-connection"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
+	"github.com/google/uuid"
 
 	"github.com/gin-gonic/gin"
 )
 
 type DigitalTwin struct {
+	DigitalTwinId       uuid.UUID
 	DigitalTwinModel    models.DigitalTwinModel
 	SystemDefinition    serviceModels.SystemDefinition
 	digitalTwinRegistry digitaltwinregistry.DigitalTwinRegistryConnection
 	server              httpserver.Server
 }
 
-func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection) (*DigitalTwin, error) {
+func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection, digitalTwinId uuid.UUID) (*DigitalTwin, error) {
 	url := fmt.Sprintf("%s:0", os.Getenv("ADDRESS"))
 
 	connection, err := physicaltwinconnection.NewConnection(digitalTwinModel.PhysicalTwinConnectionModel)
@@ -31,7 +33,7 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 	}
 	router := gin.New()
 	for _, sensedPropertyModel := range digitalTwinModel.SensedProperties {
-		AddSensorEnpoint(router, sensedPropertyModel, connection)
+		AddSensorEnpoint(router, digitalTwinId, sensedPropertyModel, connection)
 	}
 	for _, controlCommandModel := range digitalTwinModel.ControlCommands {
 		AddCommandEnpoint(router, controlCommandModel, connection)
@@ -58,6 +60,7 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 	}
 
 	return &DigitalTwin{
+		DigitalTwinId:       digitalTwinId,
 		DigitalTwinModel:    digitalTwinModel,
 		digitalTwinRegistry: digitalTwinRegistryConnection,
 		SystemDefinition:    systemDefinition,

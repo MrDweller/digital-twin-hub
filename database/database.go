@@ -13,6 +13,7 @@ import (
 var Client *mongo.Client
 var Database *mongo.Database
 var DigitalTwin *mongo.Collection
+var SensorData *mongo.Collection
 
 func InitDatabase() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
@@ -26,6 +27,7 @@ func InitDatabase() error {
 	}
 	Database = Client.Database("DigitalTwinHub")
 	DigitalTwin = Database.Collection("DigitalTwin")
+	SensorData = Database.Collection("SensorData")
 
 	return nil
 }

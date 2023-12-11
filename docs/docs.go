@@ -139,6 +139,14 @@ const docTemplate = `{
         "manufacturer.SensedPropertiesDTO": {
             "type": "object",
             "properties": {
+                "intervalTime": {
+                    "type": "integer",
+                    "default": 10
+                },
+                "sensorEndpointMode": {
+                    "type": "string",
+                    "default": "INTERVAL_RETRIVAL"
+                },
                 "serviceDefinition": {
                     "type": "string",
                     "default": "temperature"

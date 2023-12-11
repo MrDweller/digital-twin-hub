@@ -10,6 +10,7 @@ import (
 	digitaltwinregistry "github.com/MrDweller/digital-twin-hub/digital-twin-registry"
 	"github.com/MrDweller/digital-twin-hub/models"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -36,8 +37,8 @@ func NewService() (*Service, error) {
 	return service, nil
 }
 
-func (service Service) CreateDigitalTwin(digitalTwinModel models.DigitalTwinModel) (*serviceModels.SystemDefinition, error) {
-	digitalTwin, err := digitaltwin.NewDigitalTwin(digitalTwinModel, service.digitalTwinRegistryConnection)
+func (service Service) CreateDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinId uuid.UUID) (*serviceModels.SystemDefinition, error) {
+	digitalTwin, err := digitaltwin.NewDigitalTwin(digitalTwinModel, service.digitalTwinRegistryConnection, digitalTwinId)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +60,15 @@ func (service Service) DeleteDigitalTwin(address string, port int) error {
 	}
 	digitalTwins, err := service.getSavedDigitalTwins(filter)
 	database.DigitalTwin.DeleteMany(context.Background(), filter)
+
 	if err != nil {
 		return err
 	}
 
 	for _, didigitalTwin := range digitalTwins {
+		database.SensorData.DeleteMany(context.Background(), bson.M{
+			"digitaltwinid": didigitalTwin.DigitalTwinId,
+		})
 		err := service.digitalTwinRegistryConnection.UnRegisterDigitalTwin(didigitalTwin.DigitalTwinModel, didigitalTwin.SystemDefinition)
 		if err != nil {
 			return err
@@ -73,14 +78,25 @@ func (service Service) DeleteDigitalTwin(address string, port int) error {
 	return nil
 }
 
-func (service Service) registerAllSavedDigitalTwins() error {
+func (service Service) startAllSavedDigitalTwins() error {
 	digitalTwins, err := service.getSavedDigitalTwins(bson.M{})
 	if err != nil {
 		return err
 	}
 
+	for _, digitalTwin := range digitalTwins {
+		filter := bson.M{
+			"systemdefinition.address": digitalTwin.SystemDefinition.Address,
+			"systemdefinition.port":    digitalTwin.SystemDefinition.Port,
+		}
+		database.DigitalTwin.DeleteMany(context.Background(), filter)
+		if err != nil {
+			return err
+		}
+	}
+
 	for _, didigitalTwin := range digitalTwins {
-		err := service.digitalTwinRegistryConnection.RegisterDigitalTwin(didigitalTwin.DigitalTwinModel, didigitalTwin.SystemDefinition)
+		_, err := service.CreateDigitalTwin(didigitalTwin.DigitalTwinModel, didigitalTwin.DigitalTwinId)
 		if err != nil {
 			return err
 		}
@@ -89,14 +105,14 @@ func (service Service) registerAllSavedDigitalTwins() error {
 
 }
 
-func (service Service) unregisterAllSavedDigitalTwins() error {
+func (service Service) stopAllSavedDigitalTwins() error {
 	digitalTwins, err := service.getSavedDigitalTwins(bson.M{})
 	if err != nil {
 		return err
 	}
 
-	for _, didigitalTwin := range digitalTwins {
-		err := service.digitalTwinRegistryConnection.UnRegisterDigitalTwin(didigitalTwin.DigitalTwinModel, didigitalTwin.SystemDefinition)
+	for _, digitalTwin := range digitalTwins {
+		err := service.digitalTwinRegistryConnection.UnRegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.SystemDefinition)
 		if err != nil {
 			return err
 		}

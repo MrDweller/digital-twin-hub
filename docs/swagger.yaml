@@ -40,6 +40,12 @@ definitions:
     type: object
   manufacturer.SensedPropertiesDTO:
     properties:
+      intervalTime:
+        default: 10
+        type: integer
+      sensorEndpointMode:
+        default: INTERVAL_RETRIVAL
+        type: string
       serviceDefinition:
         default: temperature
         type: string

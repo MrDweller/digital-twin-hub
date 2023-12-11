@@ -7,6 +7,7 @@ import (
 	_ "github.com/MrDweller/digital-twin-hub/docs"
 	"github.com/MrDweller/digital-twin-hub/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Controller struct {
@@ -37,7 +38,7 @@ func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 		return
 	}
 
-	systemDefinition, err := controller.service.CreateDigitalTwin(digitalTwinModel)
+	systemDefinition, err := controller.service.CreateDigitalTwin(digitalTwinModel, uuid.New())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
