@@ -145,7 +145,7 @@ const docTemplate = `{
                 },
                 "sensorEndpointMode": {
                     "type": "string",
-                    "default": "INTERVAL_RETRIVAL"
+                    "default": "INTERVAL_RETRIEVAL"
                 },
                 "serviceDefinition": {
                     "type": "string",

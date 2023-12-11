@@ -64,11 +64,13 @@ func (manufacturer Manufacturer) RunManufacturer() error {
 	url := fmt.Sprintf("%s:%d", manufacturer.Address, manufacturer.Port)
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	manufacturer.setupEnpoints(router, url)
+
+	swaggerUrl := fmt.Sprintf("%s:%d", "localhost", manufacturer.Port)
+	manufacturer.setupEnpoints(router, swaggerUrl)
 	manufacturer.registerServices()
 
 	log.Printf("Starting digital twin framework on: https://%s", url)
-	log.Printf("Swagger documentation is available on: https://%s", url+"/docs/index.html")
+	log.Printf("Swagger documentation is available on: https://%s", swaggerUrl+"/docs/index.html")
 
 	server, err := httpserver.NewServer(url, router)
 	if err != nil {

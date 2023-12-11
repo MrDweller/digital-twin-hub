@@ -44,7 +44,7 @@ definitions:
         default: 10
         type: integer
       sensorEndpointMode:
-        default: INTERVAL_RETRIVAL
+        default: INTERVAL_RETRIEVAL
         type: string
       serviceDefinition:
         default: temperature
