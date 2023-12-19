@@ -67,7 +67,6 @@ definitions:
         default: my-digital-twin
         type: string
     type: object
-host: localhost:8080
 info:
   contact:
     url: https://github.com/MrDweller/digital-twin-hub
