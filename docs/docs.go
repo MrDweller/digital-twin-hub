@@ -46,6 +46,34 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "delete": {
+                "description": "Delete a digital twin based on the given address and port.",
+                "tags": [
+                    "Management"
+                ],
+                "summary": "Delete a digital twin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "address",
+                        "name": "address",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "port ",
+                        "name": "port",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
             }
         }
     },
@@ -111,6 +139,14 @@ const docTemplate = `{
         "manufacturer.SensedPropertiesDTO": {
             "type": "object",
             "properties": {
+                "intervalTime": {
+                    "type": "integer",
+                    "default": 10
+                },
+                "sensorEndpointMode": {
+                    "type": "string",
+                    "default": "INTERVAL_RETRIEVAL"
+                },
                 "serviceDefinition": {
                     "type": "string",
                     "default": "temperature"
@@ -147,7 +183,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Digital Twin Hub",

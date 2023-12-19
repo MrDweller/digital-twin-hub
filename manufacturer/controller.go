@@ -2,10 +2,12 @@ package manufacturer
 
 import (
 	"net/http"
+	"strconv"
 
 	_ "github.com/MrDweller/digital-twin-hub/docs"
 	"github.com/MrDweller/digital-twin-hub/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Controller struct {
@@ -36,11 +38,37 @@ func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 		return
 	}
 
-	systemDefinition, err := controller.service.CreateDigitalTwin(digitalTwinModel)
+	systemDefinition, err := controller.service.CreateDigitalTwin(digitalTwinModel, uuid.New())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, systemDefinition)
+}
+
+// Delete a digital twin
+// @Summary      Delete a digital twin
+// @Description  Delete a digital twin based on the given address and port.
+// @Tags         Management
+// @Param        address 				query       string  true  "address"
+// @Param        port   				query       string  true  "port "
+// @Success      200
+// @Router       /digital-twin [delete]
+func (controller *Controller) DeleteDigitalTwin(c *gin.Context) {
+	address := c.Query("address")
+	port, err := strconv.Atoi(c.Query("port"))
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = controller.service.DeleteDigitalTwin(address, port)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

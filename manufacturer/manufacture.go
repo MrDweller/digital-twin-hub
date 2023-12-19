@@ -18,6 +18,7 @@ type Manufacturer struct {
 	models.SystemDefinition
 	ServiceRegistryConnection serviceregistry.ServiceRegistryConnection
 	Services                  []models.ServiceDefinition
+	Service                   *Service
 }
 
 func NewManufacturer(address string, port int, systemName string, serviceRegistryAddress string, serviceRegistryPort int, services []models.ServiceDefinition) (*Manufacturer, error) {
@@ -39,19 +40,31 @@ func NewManufacturer(address string, port int, systemName string, serviceRegistr
 		return nil, err
 	}
 
+	service, err := NewService()
+	if err != nil {
+		log.Panic(err)
+	}
+
 	return &Manufacturer{
 		SystemDefinition:          system,
 		ServiceRegistryConnection: serviceRegistryConnection,
 		Services:                  services,
+		Service:                   service,
 	}, nil
 }
 
-func (manufacturer Manufacturer) RunManufacturerApi() error {
+func (manufacturer Manufacturer) RunManufacturer() error {
+	err := manufacturer.Service.startAllSavedDigitalTwins()
+	if err != nil {
+		return err
+	}
+
 	router := gin.Default()
 
 	url := fmt.Sprintf("%s:%d", manufacturer.Address, manufacturer.Port)
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	manufacturer.setupEnpoints(router, url)
 	manufacturer.registerServices()
 
@@ -68,13 +81,10 @@ func (manufacturer Manufacturer) RunManufacturerApi() error {
 }
 
 func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine, url string) error {
-	service, err := NewService()
-	if err != nil {
-		log.Panic(err)
-	}
-	controller := NewController(service)
+	controller := NewController(manufacturer.Service)
 
 	router.POST("/digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
+	router.DELETE("/digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
 
 	return nil
 }
@@ -86,7 +96,7 @@ func (manufacturer Manufacturer) registerServices() {
 
 }
 
-func (manufacturer Manufacturer) StopManufacturerApi() error {
+func (manufacturer Manufacturer) StopManufacturer() error {
 	log.Printf("Unregistering the manufacturer services from the service registry!")
 	for _, service := range manufacturer.Services {
 		err := manufacturer.ServiceRegistryConnection.UnRegisterService(service, manufacturer.SystemDefinition)
@@ -96,6 +106,11 @@ func (manufacturer Manufacturer) StopManufacturerApi() error {
 	}
 
 	err := manufacturer.ServiceRegistryConnection.UnRegisterSystem(manufacturer.SystemDefinition)
+	if err != nil {
+		return err
+	}
+
+	err = manufacturer.Service.stopAllSavedDigitalTwins()
 	if err != nil {
 		return err
 	}

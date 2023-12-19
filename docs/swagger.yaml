@@ -40,6 +40,12 @@ definitions:
     type: object
   manufacturer.SensedPropertiesDTO:
     properties:
+      intervalTime:
+        default: 10
+        type: integer
+      sensorEndpointMode:
+        default: INTERVAL_RETRIEVAL
+        type: string
       serviceDefinition:
         default: temperature
         type: string
@@ -61,7 +67,6 @@ definitions:
         default: my-digital-twin
         type: string
     type: object
-host: localhost:8080
 info:
   contact:
     url: https://github.com/MrDweller/digital-twin-hub
@@ -70,6 +75,25 @@ info:
   version: "1.0"
 paths:
   /digital-twin:
+    delete:
+      description: Delete a digital twin based on the given address and port.
+      parameters:
+      - description: address
+        in: query
+        name: address
+        required: true
+        type: string
+      - description: 'port '
+        in: query
+        name: port
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: Delete a digital twin
+      tags:
+      - Management
     post:
       description: Create a new digital twin based on the given JSON object. This
         will create a connection to the physical twin based on the connection info
