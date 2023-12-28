@@ -83,8 +83,8 @@ func (manufacturer Manufacturer) RunManufacturer() error {
 func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine, url string) error {
 	controller := NewController(manufacturer.Service)
 
-	router.POST("/digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
-	router.DELETE("/digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
+	router.POST("/create-digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
+	router.DELETE("/remove-digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
 
 	return nil
 }
