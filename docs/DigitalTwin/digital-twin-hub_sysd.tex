@@ -1,0 +1,236 @@
+\documentclass[a4paper]{arrowhead}
+
+\usepackage[yyyymmdd]{datetime}
+\usepackage{etoolbox}
+\usepackage[utf8]{inputenc}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage{float}
+
+\renewcommand{\dateseparator}{-}
+
+\setlength{\parskip}{1em}
+
+%% Special references
+\newcommand{\fref}[1]{{\textcolor{ArrowheadBlue}{\hyperref[sec:functions:#1]{#1}}}}
+\newcommand{\mref}[1]{{\textcolor{ArrowheadPurple}{\hyperref[sec:model:#1]{#1}}}}
+\newcommand{\pdef}[1]{{\textcolor{ArrowheadGrey}{#1\label{sec:model:primitives:#1}\label{sec:model:primitives:#1s}\label{sec:model:primitives:#1es}}}}
+\newcommand{\pref}[1]{{\textcolor{ArrowheadGrey}{\hyperref[sec:model:primitives:#1]{#1}}}}
+
+\newrobustcmd\fsubsection[3]{
+  \addtocounter{subsection}{1}
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}function \textcolor{ArrowheadBlue}{#1}}
+  \renewcommand*{\do}[1]{\rref{##1},\ }
+  \subsection*{
+    \thesubsection\quad
+    operation
+    \textcolor{ArrowheadBlue}{#1}
+    (\notblank{#2}{\mref{#2}}{})
+    \notblank{#3}{: \mref{#3}}{}
+  }
+  \label{sec:functions:#1}
+}
+\newrobustcmd\msubsection[2]{
+  \addtocounter{subsection}{1}
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}#1 \textcolor{ArrowheadPurple}{#2}}
+  \subsection*{\thesubsection\quad#1 \textcolor{ArrowheadPurple}{#2}}
+  \label{sec:model:#2} \label{sec:model:#2s} \label{sec:model:#2es}
+}
+
+\begin{document}
+
+%% Arrowhead Document Properties
+\ArrowheadTitle{Digital Twin Hub Application System}
+\ArrowheadType{System Description}
+\ArrowheadTypeShort{SysD}
+\ArrowheadVersion{4.6.1}
+\ArrowheadDate{\today}
+\ArrowheadAuthor{Jesper Frisk}
+\ArrowheadStatus{RELEASE}
+\ArrowheadContact{jesfri-8@student.ltu.se}
+\ArrowheadFooter{\href{www.arrowhead.eu}{www.arrowhead.eu}}
+\ArrowheadSetup
+%%
+
+%% Front Page
+\begin{center}
+  \vspace*{1cm}
+  \huge{\arrowtitle}
+
+  \vspace*{0.2cm}
+  \LARGE{\arrowtype}
+  \vspace*{1cm}
+
+  %\Large{Service ID: \textit{"\arrowid"}}
+  \vspace*{\fill}
+
+  % Front Page Image
+  %\includegraphics{figures/TODO}
+
+  \vspace*{1cm}
+  \vspace*{\fill}
+
+  % Front Page Abstract
+  \begin{abstract}
+    This document provides system description for the \textbf{Digital Twin Hub Application System}.
+  \end{abstract}
+
+  \vspace*{1cm}
+
+%   \scriptsize
+%   \begin{tabularx}{\textwidth}{l X}
+%     \raisebox{-0.5\height}{\includegraphics[width=2cm]{figures/artemis_logo}} & {ARTEMIS Innovation Pilot Project: Arrowhead\newline
+%     THEME [SP1-JTI-ARTEMIS-2012-AIPP4 SP1-JTI-ARTEMIS-2012-AIPP6]\newline
+%     [Production and Energy System Automation Intelligent-Built environment and urban infrastructure for sustainable and friendly cities]}
+%   \end{tabularx}
+%   \vspace*{-0.2cm}
+ \end{center}
+
+\newpage
+%%
+
+%% Table of Contents
+\tableofcontents
+\newpage
+%%
+
+\section{Overview}
+\label{sec:overview}
+\color{black}
+This document describes the Digital Twin Hub Application System, which exists to make it possible to easily connect to a physical twin and create a digital twin. This system can connect to a physical twin running on a older or more primitive protocol and extend the functionalities of the physical twin via a modern rest api. This makes it possible to have more systems communicate with the digital twin via a modern interface, and this can save battery and load on the physical twin, as consumers talk to the digital twin and only the digital twin talks to the physical twin. 
+
+The digital twin could also be configured to only talk to the physical twin on certain intervals, thus saving more battery. Having a digital twin also provides higher availability, as consumers communicate to a digital twin that can have good network connection, while a physical twin might move around or have weaker network hardware and thus have worse availability.
+
+The rest of this document is organized as follows.
+In Section \ref{sec:use}, we describe the intended usage of the system.
+In Section \ref{sec:properties}, we describe fundamental properties
+provided by the system.
+In Section \ref{sec:delimitations}, we describe delimitations of capabilities
+of the system.
+In Section \ref{sec:services}, we describe the abstract service
+operations produced by the system.
+In Section \ref{sec:security}, we describe the security capabilities
+of the system.
+
+\subsection{How This System Is Meant to Be Used}
+\label{sec:use}
+
+Given the knowledge of what protocol and connection information to a physical twin, a system operator can create a new digital twin instance via the digital twin hub. When a digital twin system is created the system operator can decide what endpoints should be created to reflect the functionality of the physical twin. The rest endpoints that is created by the digital twin instance will be registered as services in the service registry, and other application systems can consume them.
+
+When it is no longer desired to have the digital twin system it can be removed and deleted by the system operator. This will unregister all relevant services and the sysstem from the service registry, furthermore all information about the digital twin system will be removed. 
+
+\subsection{System functionalities and properties}
+\label{sec:properties}
+
+\subsubsection {Functional properties of the system}
+Digital Twin Hub solves the following needs to fulfill the requirements of a digital twin.
+
+\begin{itemize}
+    \item Connects to the physical twin via a defined protocol.
+    \item Extends the functionalities of the physical twin thru a rest api.
+    \item Register all created endpoints as services.
+    \item Stores retrieved sensor data in a database, giving higher availability of data in case of poor network access thru the physical twin.
+\end{itemize}
+
+\subsubsection {Data stored by the system}
+In order to achieve the mentioned functionalities, Digital Twin Hub saves the following data in a mongo data base.
+
+\begin{lstlisting}[label={lst:DigitalTwin},caption={Whats saved about a DigitalTwin.}]
+{
+    "digitalTwinId": "UUID",
+    "digitalTwinModel": {
+        "physicalTwinConnection": {
+            "connectionModel": {
+                "address": "string",
+                "port": 0
+            },
+                "connectionType": "string"
+        },
+        "controlCommands": [
+            {
+                "serviceDefinition": "string",
+                "serviceUri": "string"
+            }
+        ],
+        "sensedProperties": [
+            {
+                "intervalTime": 0,
+                "sensorEndpointMode": "string",
+                "serviceDefinition": "string",
+                "serviceUri": "string"
+            }
+        ]
+    },
+    "systemDefinition": {
+        "address": "string",
+        "port": 0,
+        "systemName": "string",
+        "authenticationInfo": "string"
+    }
+}
+\end{lstlisting}
+
+\begin{lstlisting}[label={lst:SensorData},caption={The saved SonsorData.}]
+{
+    "digitalTwinId": "UUID",
+    "serviceDefinition": "string",
+    "sensedData": Object
+}
+\end{lstlisting}
+
+\subsection{Important Delimitations}
+\label{sec:delimitations}
+
+No delimitations.
+
+\newpage
+
+\section{Services produced}
+\label{sec:services}
+
+\msubsection{service}{create-digital-twin}
+The purpose of this service is to make it possible to create a new digital twin system. 
+
+\msubsection{service}{remove-digital-twin}
+The purpose of this service is to make it possible to remove an existing digital twin system.
+
+\newpage
+
+\section{Security}
+\label{sec:security}
+
+The security of Eclipse Arrowhead - and therefore the security of Digital Twin Hub  - is relying on X.509 certificate trust chains. The Arrowhead trust chain consists of three level:
+\begin{itemize}
+    \item Master certificate: \texttt{arrowhead.eu}
+    \item Cloud certificate: \texttt {my-cloud.my-company.arrowhead.eu}
+    \item Client certificate: \texttt{my-client.my-cloud.my-company.arrowhead.eu}
+\end{itemize}
+
+For Arrowhead certificate profile see \url{https://github.com/eclipse-arrowhead/documentation}
+
+\newpage
+
+\bibliographystyle{IEEEtran}
+\bibliography{bibliography}
+
+\newpage
+
+\section{Revision History}
+\subsection{Amendments}
+
+\noindent\begin{tabularx}{\textwidth}{| p{1cm} | p{3cm} | p{2cm} | X | p{4cm} |} \hline
+\rowcolor{gray!33} No. & Date & Version & Subject of Amendments & Author \\ \hline
+
+1 & YYYY-MM-DD & \arrowversion & & Xxx Yyy \\ \hline
+\end{tabularx}
+
+\subsection{Quality Assurance}
+
+\noindent\begin{tabularx}{\textwidth}{| p{1cm} | p{3cm} | p{2cm} | X |} \hline
+\rowcolor{gray!33} No. & Date & Version & Approved by \\ \hline
+
+1 & YYYY-MM-DD & \arrowversion  &  \\ \hline
+
+\end{tabularx}
+
+\end{document}

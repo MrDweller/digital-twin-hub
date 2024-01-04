@@ -1,0 +1,283 @@
+\documentclass[a4paper]{arrowhead}
+
+\usepackage[yyyymmdd]{datetime}
+\usepackage{etoolbox}
+\usepackage[utf8]{inputenc}
+\usepackage{multirow}
+\usepackage{float}
+
+\renewcommand{\dateseparator}{-}
+
+\setlength{\parskip}{1em}
+
+%% Special references
+\newcommand{\fref}[1]{{\textcolor{ArrowheadBlue}{\hyperref[sec:functions:#1]{#1}}}}
+\newcommand{\mref}[1]{{\textcolor{ArrowheadPurple}{\hyperref[sec:model:#1]{#1}}}}
+\newcommand{\pdef}[1]{{\textcolor{ArrowheadGrey}{#1\label{sec:model:primitives:#1}\label{sec:model:primitives:#1s}\label{sec:model:primitives:#1es}}}}
+\newcommand{\pref}[1]{{\textcolor{ArrowheadGrey}{\hyperref[sec:model:primitives:#1]{#1}}}}
+
+\newrobustcmd\fsubsection[3]{
+  \addtocounter{subsection}{1}
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}interface \textcolor{ArrowheadBlue}{#1}}
+  \renewcommand*{\do}[1]{\rref{##1},\ }
+  \subsection*{
+    \thesubsection\quad
+    interface
+    \textcolor{ArrowheadBlue}{#1}
+    (\notblank{#2}{\mref{#2}}{})
+    \notblank{#3}{: \mref{#3}}{}
+  }
+  \label{sec:functions:#1}
+}
+\newrobustcmd\msubsection[2]{
+  \addtocounter{subsection}{1}
+  \addcontentsline{toc}{subsection}{\protect\numberline{\thesubsection}#1 \textcolor{ArrowheadPurple}{#2}}
+  \subsection*{\thesubsection\quad#1 \textcolor{ArrowheadPurple}{#2}}
+  \label{sec:model:#2} \label{sec:model:#2s} \label{sec:model:#2es}
+}
+\newrobustcmd\msubsubsection[3]{
+  \addtocounter{subsubsection}{1}
+  \addcontentsline{toc}{subsubsection}{\protect\numberline{\thesubsubsection}#1 \textcolor{ArrowheadPurple}{#2}}
+  \subsubsection*{\thesubsubsection\quad#1 \textcolor{ArrowheadPurple}{#2}}
+  \label{sec:model:#2} \label{sec:model:#2s}
+}
+%%
+
+\begin{document}
+
+%% Arrowhead Document Properties
+\ArrowheadTitle{create-digital-twin} % XXX = ServiceName 
+\ArrowheadServiceID{create-digital-twin} % ID name of service
+\ArrowheadType{Service Description}
+\ArrowheadTypeShort{SD}
+\ArrowheadVersion{4.6.1} % Arrowhead version X.Y.Z, e..g. 4.4.1
+\ArrowheadDate{\today}
+\ArrowheadAuthor{Jesper Frisk} % Corresponding author e.g. Jerker Delsing
+\ArrowheadStatus{RELEASE} % e..g. RELEASE, RELEASE CONDIDATE, PROTOTYPE
+\ArrowheadContact{jesfri-8@student.ltu.se} % Email of corresponding author
+\ArrowheadFooter{\href{www.arrowhead.eu}{www.arrowhead.eu}}
+\ArrowheadSetup
+%%
+
+%% Front Page
+\begin{center}
+  \vspace*{1cm}
+  \huge{\arrowtitle}
+
+  \vspace*{0.2cm}
+  \LARGE{\arrowtype}
+  \vspace*{1cm}
+
+  %\Large{Service ID: \textit{"\arrowid"}}
+  \vspace*{\fill}
+
+  % Front Page Image
+  %\includegraphics{figures/TODO}
+
+  \vspace*{1cm}
+  \vspace*{\fill}
+
+  % Front Page Abstract
+  \begin{abstract}
+    This document provides service description for the \textbf{create-digital-twin} service. 
+  \end{abstract}
+
+  \vspace*{1cm}
+
+%   \scriptsize
+%   \begin{tabularx}{\textwidth}{l X}
+%     \raisebox{-0.5\height}{\includegraphics[width=2cm]{figures/artemis_logo}} & {ARTEMIS Innovation Pilot Project: Arrowhead\newline
+%     THEME [SP1-JTI-ARTEMIS-2012-AIPP4 SP1-JTI-ARTEMIS-2012-AIPP6]\newline
+%     [Production and Energy System Automation Intelligent-Built environment and urban infrastructure for sustainable and friendly cities]}
+%   \end{tabularx}
+%   \vspace*{-0.2cm}
+ \end{center}
+
+\newpage
+%%
+
+%% Table of Contents
+\tableofcontents
+\newpage
+%%
+
+\section{Overview}
+\label{sec:overview}
+This document describes the \textbf{create-digital-twin} service, which makes it possible to create a digital twin. The service will register all services defined in the request and create the the digital twin, furthermore the digital twin system will be saved in the digital twin hub database. 
+
+The rest of this document is organized as follows.
+In Section \ref{sec:functions}, we describe the abstract message functions provided by the service.
+In Section \ref{sec:model}, we end the document by presenting the data types used by the mentioned functions.
+
+\subsection{How This Service Is Meant to Be Used}
+The system operator should use the \textbf{create-digital-twin} service when they want to create a new digital twin system in the local cloud. They must provide a way the digital twin can connect to a physical twin and they must define which endpoints they want to extend an reflect from the physical twin. 
+
+\subsection{Important Delimitations}
+\label{sec:delimitations}
+
+The registration data must meet the following criteria:
+
+\begin{itemize}
+    \item connectionType specifies what protocol (like CoAP, MQTT or OPC-UA) the digital twin will use to connect to the physical twin.
+    The desired connection type must have an implementation in the digital twin hub, currently only a simplistic CoAP connection is implemented and it is defined by \texttt{simple-CoAP}.
+
+    \item sensorEndpointMode currently has the modes \texttt{IMMEDIATE\_RETRIEVAL} or \texttt{INTERVAL\_RETRIEVAL}. \\
+    \texttt{IMMEDIATE\_RETRIEVAL} mode will retrieve the sensor data from the physical twin immediately when a sensor request is received. In the \texttt{INTERVAL\_RETRIEVAL} mode, the digital twin will query the physical twin automatically after the specified interval time and store it in a database, when a sensor request is received the latest value in the database will be returned. 
+\end{itemize}
+
+\subsection{Access policy}
+\label{sec:accesspolicy}
+
+Available only for system operators, it is necessary that a sysop certificate is provided.
+
+\newpage
+
+\section{Service Interface}
+\label{sec:functions}
+
+This section describes the interfaces to the service. The \textbf{create-digital-twin} service is used to create a digital twin system. Various parameters are representing the necessary system input information.
+In particular, each subsection names an interface, an input type and an output type, in that order.
+The input type is named inside parentheses, while the output type is preceded by a colon.
+Input and output types are only denoted when accepted or returned, respectively, by the interface in question. All abstract data types named in this section are defined in Section 3.
+
+The following interfaces are available.
+
+\fsubsection{HTTP/TLS/JSON}{DigitalTwinRequest}{DigitalTwinResponse}
+
+\begin{table}[ht!]
+  \centering
+  \begin{tabular}{|l|l|l|l|}
+    \rowcolor{gray!33} Profile type & Type & Version \\ \hline
+    Transfer protocol & HTTP & 1.1 \\ \hline
+    Data encryption & TLS & 1.3 \\ \hline
+    Encoding & JSON & - \\ \hline
+    Method & POST & - \\ \hline
+  \end{tabular}
+  \caption{HTTP/TLS/JSON communication details.}
+  \label{tab:comunication_semantics_profile}
+\end{table}
+
+\clearpage
+
+\section{Information Model}
+\label{sec:model}
+
+Here, all data objects that can be part of the \textbf{create-digital-twin} service
+provides to the hosting System are listed in alphabetic order.
+Note that each subsection, which describes one type of object, begins with the \textit{struct} keyword, which is used to denote a collection of named fields, each with its own data type.
+As a complement to the explicitly defined types in this section, there is also a list of implicit primitive types in Section \ref{sec:model:primitives}, which are used to represent things like hashes and identifiers.
+
+\msubsection{struct}{DigitalTwinRequest}
+\label{sec:model:DigitalTwinRequest}
+ 
+\begin{table}[H]
+\begin{tabularx}{\textwidth}{| p{4cm} | p{4cm} | p{2cm} | X |} \hline
+\rowcolor{gray!33} Field & Type & Mandatory & Description \\ \hline
+controlCommands & \pref{List}$<$\hyperref[sec:model:ControlCommand]{ControlCommand}$>$ & no & Define control endpoints \\ \hline
+physicalTwinConnection & \hyperref[sec:model:PhysicalTwinConnection]{PhysicalTwinConnection} & yes & Connection settings to the physical twin. \\ \hline
+sensedProperties & \pref{List}$<$\hyperref[sec:model:SensedProperty]{SensedProperty}$>$ & no & Define sensor endpoints \\ \hline
+\end{tabularx}
+\end{table}
+
+\msubsection{struct}{PhysicalTwinConnection}
+\label{sec:model:PhysicalTwinConnection}
+ 
+\begin{table}[H]
+\begin{tabularx}{\textwidth}{| p{4.25cm} | p{3.5cm} | p{2cm} | X |} \hline
+\rowcolor{gray!33} Field & Type & Mandatory & Description \\ \hline
+connectionModel & \pref{ConnectionModel} & yes & Defines parameters with how the digital twin connects to the physical twin. \\ \hline
+connectionType & \pref{String} & yes & Defines the type of connection that the digital twin uses to connect to the digital twin \\ \hline
+\end{tabularx}
+\end{table}
+
+\msubsection{struct}{ConnectionModel}
+\label{sec:model:ConnectionModel}
+ 
+\begin{table}[H]
+\begin{tabularx}{\textwidth}{| p{4.25cm} | p{3.5cm} | p{2cm} | X |} \hline
+\rowcolor{gray!33} Field & Type & Mandatory & Description \\ \hline
+address & \pref{Address} & yes & Network address. \\ \hline
+port & \pref{PortNumber} & yes & Network port. \\ \hline
+\end{tabularx}
+\end{table}
+
+\msubsection{struct}{ControlCommand}
+\label{sec:model:ControlCommand}
+ 
+\begin{table}[H]
+\begin{tabularx}{\textwidth}{| p{4.25cm} | p{3.5cm} | p{2cm} | X |} \hline
+\rowcolor{gray!33} Field & Type & Mandatory & Description \\ \hline
+serviceDefinition & \pref{String} & yes & Definition of the service that will be registered that correspondes to the created endpoint. \\ \hline
+serviceUri & \pref{String} & yes & Uri path for the created endpoint.\\ \hline
+\end{tabularx}
+\end{table}
+
+\msubsection{struct}{SensedProperty}
+\label{sec:model:SensedProperty}
+ 
+\begin{table}[H]
+\begin{tabularx}{\textwidth}{| p{4.25cm} | p{3.5cm} | p{2cm} | X |} \hline
+\rowcolor{gray!33} Field & Type & Mandatory & Description \\ \hline
+intervalTime & \pref{String} & no & If the "INTERVAL\_RETRIEVAL" sensor type is used then this defines the interval in seconds. \\ \hline
+sensorEndpointMode & \pref{String} & yes & Defines the type of sensor endpoint that will be used by the digital twin.\\ \hline
+serviceDefinition & \pref{String} & yes & Definition of the service that will be registered that correspondes to the created endpoint. \\ \hline
+serviceUri & \pref{String} & yes & Uri path for the created endpoint.\\ \hline
+\end{tabularx}
+\end{table}
+
+\msubsection{struct}{DigitalTwinResponse}
+\label{sec:model:DigitalTwinResponse}
+ 
+\begin{table}[H]
+\begin{tabularx}{\textwidth}{| p{4cm} | p{4cm} | X |} \hline
+\rowcolor{gray!33} Field & Type & Description \\ \hline
+address & \pref{Address} & he created digital twins network address. \\ \hline
+authenticationInfo &\pref{String}  & X.509 public key of the digital twin system. \\ \hline
+port & \pref{PortNumber} & The created digital twins network port. \\ \hline
+systemName & \pref{String} & Name of the created digital twin system.  \\ \hline
+\end{tabularx}
+\end{table}
+
+\subsection{Primitives}
+\label{sec:model:primitives}
+
+Types and structures mentioned throughout this document that are assumed to be available to implementations of this service.
+The concrete interpretations of each of these types and structures must be provided by any IDD document claiming to implement this service.
+
+
+\begin{table}[ht!]
+\begin{tabularx}{\textwidth}{| p{3cm} | X |} \hline
+\rowcolor{gray!33} Type & Description \\ \hline
+\pdef{Address}          & A string representation of the address \\ \hline
+\pdef{List}$<$A$>$      & An \textit{array} of a known number of items, each having type A. \\ \hline
+\pdef{PortNumber}       & A \pref{Number} between 0 and 65535. \\ \hline
+\pdef{String}           & A chain of characters. \\ \hline
+\end{tabularx}
+\end{table}
+
+\newpage
+
+\bibliographystyle{IEEEtran}
+\bibliography{bibliography}
+
+\newpage
+
+\section{Revision History}
+\subsection{Amendments}
+
+\noindent\begin{tabularx}{\textwidth}{| p{1cm} | p{3cm} | p{2cm} | X | p{4cm} |} \hline
+\rowcolor{gray!33} No. & Date & Version & Subject of Amendments & Author \\ \hline
+
+1 & YYYY-MM-DD & \arrowversion & & Xxx Yyy \\ \hline
+\end{tabularx}
+
+\subsection{Quality Assurance}
+
+\noindent\begin{tabularx}{\textwidth}{| p{1cm} | p{3cm} | p{2cm} | X |} \hline
+\rowcolor{gray!33} No. & Date & Version & Approved by \\ \hline
+
+1 & YYYY-MM-DD & \arrowversion  &  \\ \hline
+
+\end{tabularx}
+
+\end{document}
