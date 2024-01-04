@@ -23,9 +23,10 @@ type Manufacturer struct {
 
 func NewManufacturer(address string, port int, systemName string, serviceRegistryAddress string, serviceRegistryPort int, services []models.ServiceDefinition) (*Manufacturer, error) {
 	system := models.SystemDefinition{
-		Address:    address,
-		Port:       port,
-		SystemName: systemName,
+		Address:            address,
+		Port:               port,
+		SystemName:         systemName,
+		AuthenticationInfo: os.Getenv("AUTHENTICATION_INFO"),
 	}
 
 	serviceRegistryConnection, err := serviceregistry.NewConnection(serviceregistry.ServiceRegistry{
@@ -83,8 +84,8 @@ func (manufacturer Manufacturer) RunManufacturer() error {
 func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine, url string) error {
 	controller := NewController(manufacturer.Service)
 
-	router.POST("/create-digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
-	router.DELETE("/remove-digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
+	router.POST("/digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
+	router.DELETE("/digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
 
 	return nil
 }

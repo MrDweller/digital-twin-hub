@@ -29,7 +29,7 @@ func NewController(service *Service) *Controller {
 // @Produce      json
 // @Param        DigitalTwinModel  body       DigitalTwinModelDTO  true  "DigitalTwinModel JSON"
 // @Success      200 {object} SystemDefinitionDTO
-// @Router       /digital-twin [post]
+// @Router       /create-digital-twin [post]
 func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 
 	var digitalTwinModel models.DigitalTwinModel
@@ -54,7 +54,7 @@ func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 // @Param        address 				query       string  true  "address"
 // @Param        port   				query       string  true  "port "
 // @Success      200
-// @Router       /digital-twin [delete]
+// @Router       /remove-digital-twin [delete]
 func (controller *Controller) DeleteDigitalTwin(c *gin.Context) {
 	address := c.Query("address")
 	port, err := strconv.Atoi(c.Query("port"))

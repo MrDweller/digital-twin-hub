@@ -42,13 +42,19 @@ func main() {
 		log.Panic(err)
 	}
 
-	digitalTwinServiceDefinition := serviceModels.ServiceDefinition{
-		ServiceDefinition: "digital-twin",
-		ServiceUri:        "/digital-twin",
+	createDigitalTwinServiceDefinition := serviceModels.ServiceDefinition{
+		ServiceDefinition: "create-digital-twin",
+		ServiceUri:        "/create-digital-twin",
+	}
+
+	removeDigitalTwinServiceDefinition := serviceModels.ServiceDefinition{
+		ServiceDefinition: "remove-digital-twin",
+		ServiceUri:        "/remove-digital-twin",
 	}
 
 	manufacturer, err := manufacturer.NewManufacturer(address, port, systemName, serviceRegistryAddress, serviceRegistryPort, []serviceModels.ServiceDefinition{
-		digitalTwinServiceDefinition,
+		createDigitalTwinServiceDefinition,
+		removeDigitalTwinServiceDefinition,
 	})
 	if err != nil {
 		log.Panic(err)
