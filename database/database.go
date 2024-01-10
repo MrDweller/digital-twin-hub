@@ -19,7 +19,7 @@ func InitDatabase() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()
 
-	dbConnectionString := fmt.Sprintf("mongodb://%s:%s", os.Getenv("DB_ADDRESS"), os.Getenv("DB_PORT"))
+	dbConnectionString := fmt.Sprintf(os.Getenv("MONGO_DB_CONNECTION_STRING"))
 
 	Client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbConnectionString))
 	if err != nil {

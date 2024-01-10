@@ -29,14 +29,18 @@ func NewManufacturer(address string, port int, systemName string, serviceRegistr
 		AuthenticationInfo: os.Getenv("AUTHENTICATION_INFO"),
 	}
 
-	serviceRegistryConnection, err := serviceregistry.NewConnection(serviceregistry.ServiceRegistry{
-		Address: serviceRegistryAddress,
-		Port:    serviceRegistryPort,
-	}, serviceregistry.SERVICE_REGISTRY_ARROWHEAD_4_6_1, models.CertificateInfo{
-		CertFilePath: os.Getenv("CERT_FILE_PATH"),
-		KeyFilePath:  os.Getenv("KEY_FILE_PATH"),
-		Truststore:   os.Getenv("TRUSTSTORE_FILE_PATH"),
-	})
+	serviceRegistryConnection, err := serviceregistry.NewConnection(
+		serviceregistry.ServiceRegistry{
+			Address: serviceRegistryAddress,
+			Port:    serviceRegistryPort,
+		},
+		serviceregistry.ServiceRegistryImplementationType(os.Getenv("SERVICE_REGISTRY_IMPLEMENTATION")),
+		models.CertificateInfo{
+			CertFilePath: os.Getenv("CERT_FILE_PATH"),
+			KeyFilePath:  os.Getenv("KEY_FILE_PATH"),
+			Truststore:   os.Getenv("TRUSTSTORE_FILE_PATH"),
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +88,8 @@ func (manufacturer Manufacturer) RunManufacturer() error {
 func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine, url string) error {
 	controller := NewController(manufacturer.Service)
 
-	router.POST("/digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
-	router.DELETE("/digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
+	router.POST("/create-digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
+	router.DELETE("/remove-digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
 
 	return nil
 }

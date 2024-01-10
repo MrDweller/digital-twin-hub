@@ -17,7 +17,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/digital-twin": {
+        "/create-digital-twin": {
             "post": {
                 "description": "Create a new digital twin based on the given JSON object. This will create a connection to the physical twin based on the connection info given, this will also include generating endpoints to controll and view sensed data.",
                 "produces": [
@@ -46,7 +46,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/remove-digital-twin": {
             "delete": {
                 "description": "Delete a digital twin based on the given address and port.",
                 "tags": [

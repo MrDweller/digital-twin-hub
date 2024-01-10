@@ -74,26 +74,7 @@ info:
   title: Digital Twin Hub
   version: "1.0"
 paths:
-  /digital-twin:
-    delete:
-      description: Delete a digital twin based on the given address and port.
-      parameters:
-      - description: address
-        in: query
-        name: address
-        required: true
-        type: string
-      - description: 'port '
-        in: query
-        name: port
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-      summary: Delete a digital twin
-      tags:
-      - Management
+  /create-digital-twin:
     post:
       description: Create a new digital twin based on the given JSON object. This
         will create a connection to the physical twin based on the connection info
@@ -114,6 +95,26 @@ paths:
           schema:
             $ref: '#/definitions/manufacturer.SystemDefinitionDTO'
       summary: Create a new digital twin
+      tags:
+      - Management
+  /remove-digital-twin:
+    delete:
+      description: Delete a digital twin based on the given address and port.
+      parameters:
+      - description: address
+        in: query
+        name: address
+        required: true
+        type: string
+      - description: 'port '
+        in: query
+        name: port
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+      summary: Delete a digital twin
       tags:
       - Management
 swagger: "2.0"
