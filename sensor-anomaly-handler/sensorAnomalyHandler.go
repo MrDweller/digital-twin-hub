@@ -13,10 +13,10 @@ type Service interface {
 }
 
 type SensorAnomalyHandler struct {
-	router              *gin.Engine
-	handleableAnomalies []HandleableAnomaly
-	service             Service
-	handlingSystem      models.SystemDefinition
+	router          *gin.Engine
+	notifyAnomalies []NotifyAnomaly
+	service         Service
+	handlingSystem  models.SystemDefinition
 }
 
 func InitAnomalyHandler(handleableAnomalies []HandleableAnomaly, router *gin.Engine, SystemName string) []additionalservice.AdditionalService {
@@ -26,23 +26,29 @@ func InitAnomalyHandler(handleableAnomalies []HandleableAnomaly, router *gin.Eng
 		Port:       5672,
 		SystemName: SystemName,
 	}
+
+	notifyAnomalies := []NotifyAnomaly{}
 	for _, handleableAnomaly := range handleableAnomalies {
 		handleableAnomaly.setAnomalyHandlingSystem(handlingSystem)
 		additionalServices = append(additionalServices, &handleableAnomaly)
-		additionalServices = append(additionalServices, &NotifyAnomaly{
+
+		notifyAnomaly := NotifyAnomaly{
 			Anomaly: handleableAnomaly.Anomaly,
-		})
+		}
+		additionalServices = append(additionalServices, &notifyAnomaly)
+
+		notifyAnomalies = append(notifyAnomalies, notifyAnomaly)
 	}
-	sensorAnomalyHandler := newSensorAnomalyHandler(router, handleableAnomalies, handlingSystem)
+	sensorAnomalyHandler := newSensorAnomalyHandler(router, notifyAnomalies, handlingSystem)
 	sensorAnomalyHandler.SetupEndpoints()
 
 	return additionalServices
 }
 
-func newSensorAnomalyHandler(router *gin.Engine, handleableAnomalies []HandleableAnomaly, handlingSystem models.SystemDefinition) SensorAnomalyHandler {
+func newSensorAnomalyHandler(router *gin.Engine, notifyAnomalies []NotifyAnomaly, handlingSystem models.SystemDefinition) SensorAnomalyHandler {
 	return SensorAnomalyHandler{
-		router:              router,
-		handleableAnomalies: handleableAnomalies,
+		router:          router,
+		notifyAnomalies: notifyAnomalies,
 		service: RabbitmqAnomalyHandlerService{
 			rabbitmqAddress: "localhost",
 			rabbitmqPort:    5672,
@@ -53,7 +59,7 @@ func newSensorAnomalyHandler(router *gin.Engine, handleableAnomalies []Handleabl
 }
 
 func (sensorAnomalyHandler SensorAnomalyHandler) SetupEndpoints() {
-	for _, handleableAnomaly := range sensorAnomalyHandler.handleableAnomalies {
+	for _, handleableAnomaly := range sensorAnomalyHandler.notifyAnomalies {
 
 		sensorAnomalyHandler.router.POST(
 			handleableAnomaly.GetService().ServiceDefinition.ServiceUri,

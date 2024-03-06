@@ -36,13 +36,13 @@ func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly) error {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		anomaly.AnomalyType, // name
-		"fanout",            // type
-		true,                // durable
-		false,               // auto-deleted
-		false,               // internal
-		false,               // no-wait
-		nil,                 // arguments
+		"logs",   // name
+		"fanout", // type
+		true,     // durable
+		false,    // auto-deleted
+		false,    // internal
+		false,    // no-wait
+		nil,      // arguments
 	)
 	if err != nil {
 		log.Printf("%s: %s", "Failed to declare an exchange", err)
@@ -58,10 +58,10 @@ func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly) error {
 		return err
 	}
 	err = ch.PublishWithContext(ctx,
-		anomaly.AnomalyType, // exchange
-		"",                  // routing key
-		false,               // mandatory
-		false,               // immediate
+		"logs", // exchange
+		"",     // routing key
+		false,  // mandatory
+		false,  // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        data,
