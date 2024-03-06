@@ -3,6 +3,7 @@ package sensoranomalyhandler
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"time"
 
@@ -10,15 +11,17 @@ import (
 )
 
 type RabbitmqAnomalyHandlerService struct {
+	rabbitmqAddress string
+	rabbitmqPort    int
 }
 
 func (service RabbitmqAnomalyHandlerService) HandleAnomaly(anomaly Anomaly) error {
-	err := service.Emit(anomaly)
+	err := service.emit(anomaly)
 	return err
 }
 
-func (service RabbitmqAnomalyHandlerService) Emit(anomaly Anomaly) error {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly) error {
+	conn, err := amqp.Dial(fmt.Sprintf("amqp://guest:guest@%s:%d/", service.rabbitmqAddress, service.rabbitmqPort))
 	if err != nil {
 		log.Printf("%s: %s", "Failed to connect to RabbitMQ", err)
 		return err
@@ -33,13 +36,13 @@ func (service RabbitmqAnomalyHandlerService) Emit(anomaly Anomaly) error {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		"logs",   // name
-		"fanout", // type
-		true,     // durable
-		false,    // auto-deleted
-		false,    // internal
-		false,    // no-wait
-		nil,      // arguments
+		anomaly.AnomalyType, // name
+		"fanout",            // type
+		true,                // durable
+		false,               // auto-deleted
+		false,               // internal
+		false,               // no-wait
+		nil,                 // arguments
 	)
 	if err != nil {
 		log.Printf("%s: %s", "Failed to declare an exchange", err)
@@ -55,10 +58,10 @@ func (service RabbitmqAnomalyHandlerService) Emit(anomaly Anomaly) error {
 		return err
 	}
 	err = ch.PublishWithContext(ctx,
-		"logs", // exchange
-		"",     // routing key
-		false,  // mandatory
-		false,  // immediate
+		anomaly.AnomalyType, // exchange
+		"",                  // routing key
+		false,               // mandatory
+		false,               // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        data,

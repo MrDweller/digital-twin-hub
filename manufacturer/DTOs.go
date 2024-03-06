@@ -1,30 +1,30 @@
 package manufacturer
 
-type SensedPropertiesDTO struct {
+type SensedPropertyDTO struct {
 	ServiceDefinition  string `json:"serviceDefinition" default:"temperature"`
 	ServiceUri         string `json:"serviceUri" default:"/temperature"`
 	SensorEndpointMode string `json:"sensorEndpointMode" default:"INTERVAL_RETRIEVAL"`
 	IntervalTime       int    `json:"intervalTime" default:"10"`
 }
 
-type ControllPropertiesDTO struct {
+type ControllCommandDTO struct {
 	ServiceDefinition string `json:"serviceDefinition" default:"lamp"`
 	ServiceUri        string `json:"serviceUri" default:"/lamp"`
 }
 
 type ConnectionDTO struct {
-	ConnectionType  string `json:"connectionType" default:"simple-CoAP"`
-	ConnectionModel ConnectionModelDTO
+	ConnectionType  string         `json:"connectionType" default:"simple-CoAP"`
+	ConnectionModel map[string]any `json:"connectionModel" `
 }
 
-type ConnectionModelDTO struct {
-	Address string `json:"address" default:"localhost"`
-	Port    int    `json:"port" default:"5000"`
+type HandleableAnomalyDTO struct {
+	AnomalyType string `json:"anomalyType" default:"STUCK"`
 }
 
-type DigitalTwinModelDTO struct {
-	SensedProperties       []SensedPropertiesDTO
-	ControlCommands        []ControllPropertiesDTO
+type DigitalTwinDTO struct {
+	SensedProperties       []SensedPropertyDTO
+	ControlCommands        []ControllCommandDTO
+	HandleableAnomalies    []HandleableAnomalyDTO
 	PhysicalTwinConnection ConnectionDTO
 }
 

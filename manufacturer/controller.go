@@ -1,11 +1,15 @@
 package manufacturer
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 
+	additionalservice "github.com/MrDweller/digital-twin-hub/additional-service"
 	_ "github.com/MrDweller/digital-twin-hub/docs"
-	"github.com/MrDweller/digital-twin-hub/models"
+	sensoranomalyhandler "github.com/MrDweller/digital-twin-hub/sensor-anomaly-handler"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -27,18 +31,30 @@ func NewController(service *Service) *Controller {
 // @Description  Create a new digital twin based on the given JSON object. This will create a connection to the physical twin based on the connection info given, this will also include generating endpoints to controll and view sensed data.
 // @Tags         Management
 // @Produce      json
-// @Param        DigitalTwinModel  body       DigitalTwinModelDTO  true  "DigitalTwinModel JSON"
+// @Param        DigitalTwin  body       DigitalTwinDTO  true  "DigitalTwinDTO JSON"
 // @Success      200 {object} SystemDefinitionDTO
 // @Router       /create-digital-twin [post]
 func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 
-	var digitalTwinModel models.DigitalTwinModel
-	if err := c.BindJSON(&digitalTwinModel); err != nil {
+	var digitalTwinDto DigitalTwinDTO
+	if err := c.BindJSON(&digitalTwinDto); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	systemDefinition, err := controller.service.CreateDigitalTwin(digitalTwinModel, uuid.New())
+	fmt.Println(digitalTwinDto)
+	additionalServices := []additionalservice.AdditionalService{}
+	router := gin.New()
+
+	anomalyServices := sensoranomalyhandler.InitAnomalyHandler(
+		mapHandleableAnomaliesDtoToHandleableAnomalies(digitalTwinDto.HandleableAnomalies),
+		router,
+		os.Getenv("SYSTEM_NAME"),
+	)
+	additionalServices = append(additionalServices, anomalyServices...)
+
+	systemDefinition, err := controller.service.CreateDigitalTwin(mapDigitalTwinDtoToDigitalTwinModel(digitalTwinDto, additionalServices), uuid.New(), router)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

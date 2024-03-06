@@ -1,8 +1,11 @@
 package models
 
+import additionalservice "github.com/MrDweller/digital-twin-hub/additional-service"
+
 type DigitalTwinModel struct {
-	SensedProperties []SensedPropertyModel  `json:"sensedProperties"`
-	ControlCommands  []ControllCommandModel `json:"controlCommands"`
+	SensedProperties        []SensedPropertyModel                      `json:"sensedProperties"`
+	ControlCommands         []ControllCommandModel                     `json:"controlCommands"`
+	AdditionalServiceModels []additionalservice.AdditionalServiceModel `json:"additionalServiceModel"`
 
 	PhysicalTwinConnectionModel PhysicalTwinConnectionModel `json:"physicalTwinConnection"`
 }

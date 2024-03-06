@@ -70,7 +70,7 @@ func (manufacturer Manufacturer) RunManufacturer() error {
 
 	router.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	manufacturer.setupEnpoints(router, url)
+	manufacturer.setupEnpoints(router)
 	manufacturer.registerServices()
 
 	log.Printf("Starting digital twin framework on: https://%s", url)
@@ -85,7 +85,7 @@ func (manufacturer Manufacturer) RunManufacturer() error {
 
 }
 
-func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine, url string) error {
+func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine) error {
 	controller := NewController(manufacturer.Service)
 
 	router.POST("/create-digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
@@ -96,7 +96,13 @@ func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine, url string) e
 
 func (manufacturer Manufacturer) registerServices() {
 	for _, service := range manufacturer.Services {
-		manufacturer.ServiceRegistryConnection.RegisterService(service, manufacturer.SystemDefinition)
+		manufacturer.ServiceRegistryConnection.RegisterService(
+			service,
+			[]string{
+				"HTTP-SECURE-JSON",
+			},
+			manufacturer.SystemDefinition,
+		)
 	}
 
 }

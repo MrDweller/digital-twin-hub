@@ -29,12 +29,12 @@ const docTemplate = `{
                 "summary": "Create a new digital twin",
                 "parameters": [
                     {
-                        "description": "DigitalTwinModel JSON",
-                        "name": "DigitalTwinModel",
+                        "description": "DigitalTwinDTO JSON",
+                        "name": "DigitalTwin",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/manufacturer.DigitalTwinModelDTO"
+                            "$ref": "#/definitions/manufacturer.DigitalTwinDTO"
                         }
                     }
                 ],
@@ -84,7 +84,8 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "connectionModel": {
-                    "$ref": "#/definitions/manufacturer.ConnectionModelDTO"
+                    "type": "object",
+                    "additionalProperties": {}
                 },
                 "connectionType": {
                     "type": "string",
@@ -92,20 +93,7 @@ const docTemplate = `{
                 }
             }
         },
-        "manufacturer.ConnectionModelDTO": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "default": "localhost"
-                },
-                "port": {
-                    "type": "integer",
-                    "default": 5000
-                }
-            }
-        },
-        "manufacturer.ControllPropertiesDTO": {
+        "manufacturer.ControllCommandDTO": {
             "type": "object",
             "properties": {
                 "serviceDefinition": {
@@ -118,13 +106,19 @@ const docTemplate = `{
                 }
             }
         },
-        "manufacturer.DigitalTwinModelDTO": {
+        "manufacturer.DigitalTwinDTO": {
             "type": "object",
             "properties": {
                 "controlCommands": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/manufacturer.ControllPropertiesDTO"
+                        "$ref": "#/definitions/manufacturer.ControllCommandDTO"
+                    }
+                },
+                "handleableAnomalies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/manufacturer.HandleableAnomalyDTO"
                     }
                 },
                 "physicalTwinConnection": {
@@ -133,12 +127,21 @@ const docTemplate = `{
                 "sensedProperties": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/manufacturer.SensedPropertiesDTO"
+                        "$ref": "#/definitions/manufacturer.SensedPropertyDTO"
                     }
                 }
             }
         },
-        "manufacturer.SensedPropertiesDTO": {
+        "manufacturer.HandleableAnomalyDTO": {
+            "type": "object",
+            "properties": {
+                "anomalyType": {
+                    "type": "string",
+                    "default": "STUCK"
+                }
+            }
+        },
+        "manufacturer.SensedPropertyDTO": {
             "type": "object",
             "properties": {
                 "intervalTime": {

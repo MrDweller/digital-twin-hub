@@ -2,21 +2,13 @@ definitions:
   manufacturer.ConnectionDTO:
     properties:
       connectionModel:
-        $ref: '#/definitions/manufacturer.ConnectionModelDTO'
+        additionalProperties: {}
+        type: object
       connectionType:
         default: simple-CoAP
         type: string
     type: object
-  manufacturer.ConnectionModelDTO:
-    properties:
-      address:
-        default: localhost
-        type: string
-      port:
-        default: 5000
-        type: integer
-    type: object
-  manufacturer.ControllPropertiesDTO:
+  manufacturer.ControllCommandDTO:
     properties:
       serviceDefinition:
         default: lamp
@@ -25,20 +17,30 @@ definitions:
         default: /lamp
         type: string
     type: object
-  manufacturer.DigitalTwinModelDTO:
+  manufacturer.DigitalTwinDTO:
     properties:
       controlCommands:
         items:
-          $ref: '#/definitions/manufacturer.ControllPropertiesDTO'
+          $ref: '#/definitions/manufacturer.ControllCommandDTO'
+        type: array
+      handleableAnomalies:
+        items:
+          $ref: '#/definitions/manufacturer.HandleableAnomalyDTO'
         type: array
       physicalTwinConnection:
         $ref: '#/definitions/manufacturer.ConnectionDTO'
       sensedProperties:
         items:
-          $ref: '#/definitions/manufacturer.SensedPropertiesDTO'
+          $ref: '#/definitions/manufacturer.SensedPropertyDTO'
         type: array
     type: object
-  manufacturer.SensedPropertiesDTO:
+  manufacturer.HandleableAnomalyDTO:
+    properties:
+      anomalyType:
+        default: STUCK
+        type: string
+    type: object
+  manufacturer.SensedPropertyDTO:
     properties:
       intervalTime:
         default: 10
@@ -81,12 +83,12 @@ paths:
         given, this will also include generating endpoints to controll and view sensed
         data.
       parameters:
-      - description: DigitalTwinModel JSON
+      - description: DigitalTwinDTO JSON
         in: body
-        name: DigitalTwinModel
+        name: DigitalTwin
         required: true
         schema:
-          $ref: '#/definitions/manufacturer.DigitalTwinModelDTO'
+          $ref: '#/definitions/manufacturer.DigitalTwinDTO'
       produces:
       - application/json
       responses:

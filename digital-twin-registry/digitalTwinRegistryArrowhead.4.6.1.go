@@ -1,6 +1,7 @@
 package digitaltwinregistry
 
 import (
+	"log"
 	"os"
 
 	"github.com/MrDweller/digital-twin-hub/models"
@@ -43,8 +44,19 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) connect() error {
 }
 
 func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwin(digitalTwinModel models.DigitalTwinModel, systemDefinition serviceModels.SystemDefinition) error {
+	_, err := digitalTwinRegistry.RegisterSystem(systemDefinition)
+	if err != nil {
+		return err
+	}
+
 	for _, sensedPropertyModel := range digitalTwinModel.SensedProperties {
-		_, err := digitalTwinRegistry.RegisterService(sensedPropertyModel.ServiceDefinition, systemDefinition)
+		_, err := digitalTwinRegistry.RegisterService(
+			sensedPropertyModel.ServiceDefinition,
+			[]string{
+				"HTTP-SECURE-JSON",
+			},
+			systemDefinition,
+		)
 		if err != nil {
 			return err
 		}
@@ -52,11 +64,36 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwi
 	}
 
 	for _, controlCommandModel := range digitalTwinModel.ControlCommands {
-		_, err := digitalTwinRegistry.RegisterService(controlCommandModel.ServiceDefinition, systemDefinition)
+		_, err := digitalTwinRegistry.RegisterService(
+			controlCommandModel.ServiceDefinition,
+			[]string{
+				"HTTP-SECURE-JSON",
+			},
+			systemDefinition,
+		)
 		if err != nil {
 			return err
 		}
 
+	}
+
+	for _, additionalServiceModel := range digitalTwinModel.AdditionalServiceModels {
+		log.Println(additionalServiceModel)
+		var localSystemDefinition serviceModels.SystemDefinition
+		if additionalServiceModel.HasExternalHost {
+			localSystemDefinition = additionalServiceModel.SystemDefinition
+		} else {
+			localSystemDefinition = systemDefinition
+		}
+
+		_, err := digitalTwinRegistry.RegisterService(
+			additionalServiceModel.ServiceDefinition,
+			additionalServiceModel.Interfaces,
+			localSystemDefinition,
+		)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -78,5 +115,20 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) UnRegisterDigitalT
 		}
 
 	}
+
+	for _, additionalServiceModel := range digitalTwinModel.AdditionalServiceModels {
+		if additionalServiceModel.HasExternalHost {
+			digitalTwinRegistry.UnRegisterSystem(additionalServiceModel.SystemDefinition)
+		} else {
+			err := digitalTwinRegistry.UnRegisterService(
+				additionalServiceModel.ServiceDefinition,
+				systemDefinition,
+			)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return digitalTwinRegistry.UnRegisterSystem(systemDefinition)
 }

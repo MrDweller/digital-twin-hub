@@ -10,7 +10,6 @@ import (
 	httpserver "github.com/MrDweller/digital-twin-hub/http-server"
 	"github.com/MrDweller/digital-twin-hub/models"
 	physicaltwinconnection "github.com/MrDweller/digital-twin-hub/physical-twin-connection"
-	sensoranomalyhandler "github.com/MrDweller/digital-twin-hub/sensor-anomaly-handler"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
 	"github.com/google/uuid"
 
@@ -25,16 +24,14 @@ type DigitalTwin struct {
 	server              httpserver.Server
 }
 
-func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection, digitalTwinId uuid.UUID) (*DigitalTwin, error) {
+func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection, digitalTwinId uuid.UUID, router *gin.Engine) (*DigitalTwin, error) {
 	url := fmt.Sprintf("%s:0", os.Getenv("ADDRESS"))
 
 	connection, err := physicaltwinconnection.NewConnection(digitalTwinModel.PhysicalTwinConnectionModel)
 	if err != nil {
 		return nil, err
 	}
-	router := gin.New()
-	sensorAnomalyHandler := sensoranomalyhandler.NewSensorAnomalyHandler(router)
-	sensorAnomalyHandler.SetupEndpoints()
+
 	for _, sensedPropertyModel := range digitalTwinModel.SensedProperties {
 		AddSensorEnpoint(router, digitalTwinId, sensedPropertyModel, connection)
 	}
