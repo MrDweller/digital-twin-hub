@@ -48,7 +48,7 @@ func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 	router := gin.New()
 
 	anomalyServices := sensoranomalyhandler.InitAnomalyHandler(
-		mapHandleableAnomaliesDtoToHandleableAnomalies(digitalTwinDto.HandleableAnomalies),
+		mapAnomaliesDtoToAnomalies(digitalTwinDto.HandleableAnomalies),
 		router,
 		os.Getenv("SYSTEM_NAME"),
 	)

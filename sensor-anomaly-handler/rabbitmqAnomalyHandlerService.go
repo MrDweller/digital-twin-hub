@@ -10,17 +10,35 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+const EXCHANGE = "exchange"
+
 type RabbitmqAnomalyHandlerService struct {
 	rabbitmqAddress string
 	rabbitmqPort    int
 }
 
-func (service RabbitmqAnomalyHandlerService) HandleAnomaly(anomaly Anomaly) error {
-	err := service.emit(anomaly)
+type RabbitMQHandleableAnomaly struct {
+	HandleableAnomalyBase
+}
+
+func (rabbitMQHandleableAnomaly *RabbitMQHandleableAnomaly) GetMetaData() map[string]string {
+	return map[string]string{
+		EXCHANGE: rabbitMQHandleableAnomaly.AnomalyType,
+	}
+}
+
+func (rabbitMQHandleableAnomaly *RabbitMQHandleableAnomaly) GetAnomaly() Anomaly {
+	return rabbitMQHandleableAnomaly.Anomaly
+}
+
+func (service RabbitmqAnomalyHandlerService) HandleAnomaly(handleableAnomaly HandleableAnomaly) error {
+	RabbitMQHandleableAnomaly := handleableAnomaly.(*RabbitMQHandleableAnomaly)
+	metadata := RabbitMQHandleableAnomaly.GetMetaData()
+	err := service.emit(handleableAnomaly.GetAnomaly(), metadata[EXCHANGE])
 	return err
 }
 
-func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly) error {
+func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly, exchange string) error {
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://guest:guest@%s:%d/", service.rabbitmqAddress, service.rabbitmqPort))
 	if err != nil {
 		log.Printf("%s: %s", "Failed to connect to RabbitMQ", err)
@@ -36,7 +54,7 @@ func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly) error {
 	defer ch.Close()
 
 	err = ch.ExchangeDeclare(
-		"logs",   // name
+		exchange, // name
 		"fanout", // type
 		true,     // durable
 		false,    // auto-deleted
@@ -58,10 +76,10 @@ func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly) error {
 		return err
 	}
 	err = ch.PublishWithContext(ctx,
-		"logs", // exchange
-		"",     // routing key
-		false,  // mandatory
-		false,  // immediate
+		exchange, // exchange
+		"",       // routing key
+		false,    // mandatory
+		false,    // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        data,

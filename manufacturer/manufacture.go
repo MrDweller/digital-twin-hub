@@ -101,6 +101,7 @@ func (manufacturer Manufacturer) registerServices() {
 			[]string{
 				"HTTP-SECURE-JSON",
 			},
+			map[string]string{},
 			manufacturer.SystemDefinition,
 		)
 	}

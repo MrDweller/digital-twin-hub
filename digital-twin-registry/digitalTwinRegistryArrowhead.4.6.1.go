@@ -55,6 +55,7 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwi
 			[]string{
 				"HTTP-SECURE-JSON",
 			},
+			map[string]string{},
 			systemDefinition,
 		)
 		if err != nil {
@@ -69,6 +70,7 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwi
 			[]string{
 				"HTTP-SECURE-JSON",
 			},
+			map[string]string{},
 			systemDefinition,
 		)
 		if err != nil {
@@ -89,6 +91,7 @@ func (digitalTwinRegistry DigitalTwinRegistryArrowhead_4_6_1) RegisterDigitalTwi
 		_, err := digitalTwinRegistry.RegisterService(
 			additionalServiceModel.ServiceDefinition,
 			additionalServiceModel.Interfaces,
+			additionalServiceModel.Metadata,
 			localSystemDefinition,
 		)
 		if err != nil {

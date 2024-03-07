@@ -11,6 +11,7 @@ func mapDigitalTwinDtoToDigitalTwinModel(digitalTwinDTO DigitalTwinDTO, addition
 	additionalServiceModels := []additionalservice.AdditionalServiceModel{}
 	for _, additionalService := range additionalServices {
 		additionalServiceModel := additionalService.GetService()
+		additionalServiceModel.Metadata = additionalService.GetMetaData()
 		additionalServiceModels = append(additionalServiceModels, additionalServiceModel)
 
 	}
@@ -31,19 +32,17 @@ func mapConnectionDtoToPhysicalTwinConnectionModel(connectionDTO ConnectionDTO) 
 	}
 }
 
-func mapHandleableAnomaliesDtoToHandleableAnomalies(handleableAnomaliesDTO []HandleableAnomalyDTO) []sensoranomalyhandler.HandleableAnomaly {
-	handleableAnomalies := []sensoranomalyhandler.HandleableAnomaly{}
-	for _, handleableAnomalyDTO := range handleableAnomaliesDTO {
-		handleableAnomalies = append(handleableAnomalies, mapHandleableAnomalyDtoToHandleableAnomaly(handleableAnomalyDTO))
+func mapAnomaliesDtoToAnomalies(anomaliesDTO []AnomalyDTO) []sensoranomalyhandler.Anomaly {
+	handleableAnomalies := []sensoranomalyhandler.Anomaly{}
+	for _, handleableAnomalyDTO := range anomaliesDTO {
+		handleableAnomalies = append(handleableAnomalies, mapAnomalyDtoToAnomaly(handleableAnomalyDTO))
 	}
 	return handleableAnomalies
 }
 
-func mapHandleableAnomalyDtoToHandleableAnomaly(handleableAnomalyDTO HandleableAnomalyDTO) sensoranomalyhandler.HandleableAnomaly {
-	return sensoranomalyhandler.HandleableAnomaly{
-		Anomaly: sensoranomalyhandler.Anomaly{
-			AnomalyType: handleableAnomalyDTO.AnomalyType,
-		},
+func mapAnomalyDtoToAnomaly(anomalyDTO AnomalyDTO) sensoranomalyhandler.Anomaly {
+	return sensoranomalyhandler.Anomaly{
+		AnomalyType: anomalyDTO.AnomalyType,
 	}
 }
 

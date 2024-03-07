@@ -1,6 +1,7 @@
 package sensoranomalyhandler
 
 import (
+	"fmt"
 	"net/http"
 
 	additionalservice "github.com/MrDweller/digital-twin-hub/additional-service"
@@ -8,18 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Service interface {
-	HandleAnomaly(anomaly Anomaly) error
-}
-
 type SensorAnomalyHandler struct {
-	router          *gin.Engine
-	notifyAnomalies []NotifyAnomaly
-	service         Service
-	handlingSystem  models.SystemDefinition
+	router                         *gin.Engine
+	notifyToHandleableAnomaliesMap map[*NotifyAnomaly]HandleableAnomaly
+	anomalyHandlerService          AnomalyHandlerService
 }
 
-func InitAnomalyHandler(handleableAnomalies []HandleableAnomaly, router *gin.Engine, SystemName string) []additionalservice.AdditionalService {
+func InitAnomalyHandler(anomalies []Anomaly, router *gin.Engine, SystemName string) []additionalservice.AdditionalService {
 	additionalServices := []additionalservice.AdditionalService{}
 	handlingSystem := models.SystemDefinition{
 		Address:    "localhost",
@@ -27,53 +23,62 @@ func InitAnomalyHandler(handleableAnomalies []HandleableAnomaly, router *gin.Eng
 		SystemName: SystemName,
 	}
 
-	notifyAnomalies := []NotifyAnomaly{}
-	for _, handleableAnomaly := range handleableAnomalies {
-		handleableAnomaly.setAnomalyHandlingSystem(handlingSystem)
-		additionalServices = append(additionalServices, &handleableAnomaly)
+	notifyToHandleableAnomaliesMap := map[*NotifyAnomaly]HandleableAnomaly{}
+	for _, anomaly := range anomalies {
 
-		notifyAnomaly := NotifyAnomaly{
-			Anomaly: handleableAnomaly.Anomaly,
+		handleableAnomaly := &RabbitMQHandleableAnomaly{
+			HandleableAnomalyBase: HandleableAnomalyBase{
+				anomalyHandlingSystem: handlingSystem,
+				Anomaly:               anomaly,
+			},
 		}
-		additionalServices = append(additionalServices, &notifyAnomaly)
 
-		notifyAnomalies = append(notifyAnomalies, notifyAnomaly)
+		additionalServices = append(additionalServices, handleableAnomaly)
+
+		notifyAnomaly := &NotifyAnomaly{
+			Anomaly: anomaly,
+		}
+		additionalServices = append(additionalServices, notifyAnomaly)
+
+		notifyToHandleableAnomaliesMap[notifyAnomaly] = handleableAnomaly
+		fmt.Println(handleableAnomaly.GetService())
 	}
-	sensorAnomalyHandler := newSensorAnomalyHandler(router, notifyAnomalies, handlingSystem)
+	sensorAnomalyHandler := newSensorAnomalyHandler(router, notifyToHandleableAnomaliesMap, RabbitmqAnomalyHandlerService{
+		rabbitmqAddress: handlingSystem.Address,
+		rabbitmqPort:    handlingSystem.Port,
+	})
 	sensorAnomalyHandler.SetupEndpoints()
 
 	return additionalServices
 }
 
-func newSensorAnomalyHandler(router *gin.Engine, notifyAnomalies []NotifyAnomaly, handlingSystem models.SystemDefinition) SensorAnomalyHandler {
+func newSensorAnomalyHandler(router *gin.Engine, notifyToHandleableAnomaliesMap map[*NotifyAnomaly]HandleableAnomaly, anomalyHandlerService AnomalyHandlerService) SensorAnomalyHandler {
 	return SensorAnomalyHandler{
-		router:          router,
-		notifyAnomalies: notifyAnomalies,
-		service: RabbitmqAnomalyHandlerService{
-			rabbitmqAddress: "localhost",
-			rabbitmqPort:    5672,
-		},
-		handlingSystem: handlingSystem,
+		router:                         router,
+		notifyToHandleableAnomaliesMap: notifyToHandleableAnomaliesMap,
+		anomalyHandlerService:          anomalyHandlerService,
 	}
 
 }
 
-func (sensorAnomalyHandler SensorAnomalyHandler) SetupEndpoints() {
-	for _, handleableAnomaly := range sensorAnomalyHandler.notifyAnomalies {
-
-		sensorAnomalyHandler.router.POST(
-			handleableAnomaly.GetService().ServiceDefinition.ServiceUri,
-			func(c *gin.Context) {
-
-				err := sensorAnomalyHandler.service.HandleAnomaly(handleableAnomaly.Anomaly)
-				if err != nil {
-					c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-					return
-				}
-
-				c.Status(http.StatusOK)
-			},
-		)
+func (sensorAnomalyHandler *SensorAnomalyHandler) SetupEndpoints() {
+	for notifyAnomaly, handleableAnomaly := range sensorAnomalyHandler.notifyToHandleableAnomaliesMap {
+		sensorAnomalyHandler.addNotifyEndpoint(notifyAnomaly, handleableAnomaly)
 
 	}
+}
+
+func (sensorAnomalyHandler *SensorAnomalyHandler) addNotifyEndpoint(notifyAnomaly *NotifyAnomaly, handleableAnomaly HandleableAnomaly) {
+	sensorAnomalyHandler.router.POST(
+		notifyAnomaly.GetService().ServiceDefinition.ServiceUri,
+		func(c *gin.Context) {
+			err := sensorAnomalyHandler.anomalyHandlerService.HandleAnomaly(handleableAnomaly)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+
+			c.Status(http.StatusOK)
+		},
+	)
 }

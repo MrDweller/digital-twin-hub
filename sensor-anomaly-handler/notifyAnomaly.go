@@ -23,3 +23,7 @@ func (notifyAnomaly *NotifyAnomaly) GetService() additionalservice.AdditionalSer
 		HasExternalHost: false,
 	}
 }
+
+func (notifyAnomaly *NotifyAnomaly) GetMetaData() map[string]string {
+	return map[string]string{}
+}

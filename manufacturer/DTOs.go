@@ -17,14 +17,14 @@ type ConnectionDTO struct {
 	ConnectionModel map[string]any `json:"connectionModel" `
 }
 
-type HandleableAnomalyDTO struct {
+type AnomalyDTO struct {
 	AnomalyType string `json:"anomalyType" default:"STUCK"`
 }
 
 type DigitalTwinDTO struct {
 	SensedProperties       []SensedPropertyDTO
 	ControlCommands        []ControllCommandDTO
-	HandleableAnomalies    []HandleableAnomalyDTO
+	HandleableAnomalies    []AnomalyDTO
 	PhysicalTwinConnection ConnectionDTO
 }
 
