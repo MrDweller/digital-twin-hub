@@ -2,7 +2,6 @@ package digitaltwinregistry
 
 import (
 	"log"
-	"os"
 
 	"github.com/MrDweller/digital-twin-hub/models"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
@@ -24,11 +23,7 @@ func NewDigitalTwinRegistryArrowhead_4_6_1(digitalTwinRegistry DigitalTwinRegist
 				Address: digitalTwinRegistry.Address,
 				Port:    digitalTwinRegistry.Port,
 			},
-			CertificateInfo: serviceModels.CertificateInfo{
-				CertFilePath: os.Getenv("CERT_FILE_PATH"),
-				KeyFilePath:  os.Getenv("KEY_FILE_PATH"),
-				Truststore:   os.Getenv("TRUSTSTORE_FILE_PATH"),
-			},
+			CertificateInfo: digitalTwinRegistry.CertificateInfo,
 		},
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/google/uuid"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -19,11 +20,12 @@ type RabbitmqAnomalyHandlerService struct {
 
 type RabbitMQHandleableAnomaly struct {
 	HandleableAnomalyBase
+	id uuid.UUID
 }
 
 func (rabbitMQHandleableAnomaly *RabbitMQHandleableAnomaly) GetMetaData() map[string]string {
 	return map[string]string{
-		EXCHANGE: rabbitMQHandleableAnomaly.AnomalyType,
+		EXCHANGE: fmt.Sprintf("%s-%s", rabbitMQHandleableAnomaly.AnomalyType, rabbitMQHandleableAnomaly.id.String()),
 	}
 }
 

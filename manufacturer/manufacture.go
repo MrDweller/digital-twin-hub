@@ -90,6 +90,7 @@ func (manufacturer Manufacturer) setupEnpoints(router *gin.Engine) error {
 
 	router.POST("/create-digital-twin", AdminAuthorization, controller.CreateDigitalTwin)
 	router.DELETE("/remove-digital-twin", AdminAuthorization, controller.DeleteDigitalTwin)
+	router.POST("/upload-certificates", AdminAuthorization, controller.UploadCertificates)
 
 	return nil
 }

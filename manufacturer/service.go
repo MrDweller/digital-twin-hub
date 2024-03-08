@@ -2,6 +2,8 @@ package manufacturer
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -17,35 +19,57 @@ import (
 )
 
 type Service struct {
-	digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection
+	digitalTwinRegistryAddress string
+	digitalTwinRegistryPort    int
 }
 
 func NewService() (*Service, error) {
-	srPort, err := strconv.Atoi(os.Getenv("DIGITAL_TWIN_REGISTRY_PORT"))
+	digitalTwinRegistryPort, err := strconv.Atoi(os.Getenv("DIGITAL_TWIN_REGISTRY_PORT"))
 	if err != nil {
 		return nil, err
 	}
-	digitalTwinRegistryConnection, err := digitaltwinregistry.NewConnection(digitaltwinregistry.DigitalTwinRegistry{
-		Address: os.Getenv("DIGITAL_TWIN_REGISTRY_ADDRESS"),
-		Port:    srPort,
-	})
-	if err != nil {
-		return nil, err
-	}
+
 	service := &Service{
-		digitalTwinRegistryConnection: digitalTwinRegistryConnection,
+		digitalTwinRegistryAddress: os.Getenv("DIGITAL_TWIN_REGISTRY_ADDRESS"),
+		digitalTwinRegistryPort:    digitalTwinRegistryPort,
 	}
 	return service, nil
 }
 
-func (service Service) CreateDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinId uuid.UUID, router *gin.Engine) (*serviceModels.SystemDefinition, error) {
+func (service Service) CreateDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinId uuid.UUID, systemName string, router *gin.Engine) (*serviceModels.SystemDefinition, error) {
 
-	digitalTwin, err := digitaltwin.NewDigitalTwin(digitalTwinModel, service.digitalTwinRegistryConnection, digitalTwinId, router)
+	filter := bson.M{
+		"certificateid": digitalTwinModel.CertificateId,
+	}
+	var certificate models.CertificateModel
+	err := database.Certificate.FindOne(context.TODO(), filter).Decode(&certificate)
 	if err != nil {
 		return nil, err
 	}
 
-	database.DigitalTwin.InsertOne(context.Background(), digitalTwin)
+	certFilePath := certificate.CertFilePath
+	keyFilePath := certificate.KeyFilePath
+
+	digitalTwin, err := digitaltwin.NewDigitalTwin(
+		digitalTwinModel,
+		digitaltwinregistry.DigitalTwinRegistry{
+			Address: service.digitalTwinRegistryAddress,
+			Port:    service.digitalTwinRegistryPort,
+			CertificateInfo: serviceModels.CertificateInfo{
+				CertFilePath: certFilePath,
+				KeyFilePath:  keyFilePath,
+				Truststore:   os.Getenv("TRUSTSTORE_FILE_PATH"),
+			},
+		},
+		digitalTwinId,
+		systemName,
+		router,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	// database.DigitalTwin.InsertOne(context.Background(), digitalTwin)
 
 	systemDefinition, err := digitalTwin.StartDigitalTwin()
 	if err != nil {
@@ -67,11 +91,11 @@ func (service Service) DeleteDigitalTwin(address string, port int) error {
 		return err
 	}
 
-	for _, didigitalTwin := range digitalTwins {
+	for _, digitalTwin := range digitalTwins {
 		database.SensorData.DeleteMany(context.Background(), bson.M{
-			"digitaltwinid": didigitalTwin.DigitalTwinId,
+			"digitaltwinid": digitalTwin.DigitalTwinId,
 		})
-		err := service.digitalTwinRegistryConnection.UnRegisterDigitalTwin(didigitalTwin.DigitalTwinModel, didigitalTwin.SystemDefinition)
+		// err := service.digitalTwinRegistryConnection.UnRegisterDigitalTwin(didigitalTwin.DigitalTwinModel, didigitalTwin.SystemDefinition)
 		if err != nil {
 			return err
 		}
@@ -97,9 +121,9 @@ func (service Service) startAllSavedDigitalTwins() error {
 		}
 	}
 
-	for _, didigitalTwin := range digitalTwins {
+	for _, digitalTwin := range digitalTwins {
 		router := gin.New()
-		_, err := service.CreateDigitalTwin(didigitalTwin.DigitalTwinModel, didigitalTwin.DigitalTwinId, router)
+		_, err = service.CreateDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.DigitalTwinId, digitalTwin.SystemDefinition.SystemName, router)
 		if err != nil {
 			return err
 		}
@@ -115,7 +139,8 @@ func (service Service) stopAllSavedDigitalTwins() error {
 	}
 
 	for _, digitalTwin := range digitalTwins {
-		err := service.digitalTwinRegistryConnection.UnRegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.SystemDefinition)
+		log.Println(digitalTwin)
+		// err := service.digitalTwinRegistryConnection.UnRegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.SystemDefinition)
 		if err != nil {
 			return err
 		}
@@ -136,4 +161,25 @@ func (service Service) getSavedDigitalTwins(filter interface{}, opts ...*options
 	}
 
 	return digitalTwins, nil
+}
+
+func (service Service) UploadCertificates(certFileName string, keyFileName string) models.CertificateModel {
+	certificateId := uuid.New()
+
+	certificateDirectoryPath := fmt.Sprintf("certificates/digital-twins/%s", certificateId)
+
+	certFilePath := fmt.Sprintf("%s/%s", certificateDirectoryPath, certFileName)
+
+	keyFilePath := fmt.Sprintf("%s/%s", certificateDirectoryPath, keyFileName)
+
+	certificateModel := models.CertificateModel{
+		CertificateId: certificateId,
+		CertFilePath:  certFilePath,
+		KeyFilePath:   keyFilePath,
+	}
+
+	database.Certificate.InsertOne(context.Background(), certificateModel)
+
+	return certificateModel
+
 }

@@ -18,13 +18,15 @@ type ConnectionDTO struct {
 }
 
 type AnomalyDTO struct {
-	AnomalyType string `json:"anomalyType" default:"STUCK"`
+	AnomalyType string `json:"anomalyType" default:"stuck"`
 }
 
 type DigitalTwinDTO struct {
-	SensedProperties       []SensedPropertyDTO
-	ControlCommands        []ControllCommandDTO
-	HandleableAnomalies    []AnomalyDTO
+	SensedProperties    []SensedPropertyDTO
+	ControlCommands     []ControllCommandDTO
+	HandleableAnomalies []AnomalyDTO
+	CertificateDTO
+	SystemName             string `json:"systemName" defualt:"my-digital-twin"`
 	PhysicalTwinConnection ConnectionDTO
 }
 
@@ -33,4 +35,8 @@ type SystemDefinitionDTO struct {
 	Port               int    `json:"port" default:"5000"`
 	SystemName         string `json:"systemName" default:"my-digital-twin"`
 	AuthenticationInfo string `json:"authenticationInfo"`
+}
+
+type CertificateDTO struct {
+	CertificateId string `json:"certificateId" defualt:"ce833540-6430-4d7e-b0e0-55b46a99103b"`
 }

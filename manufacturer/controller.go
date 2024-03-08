@@ -1,10 +1,8 @@
 package manufacturer
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strconv"
 
 	additionalservice "github.com/MrDweller/digital-twin-hub/additional-service"
@@ -38,23 +36,21 @@ func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 
 	var digitalTwinDto DigitalTwinDTO
 	if err := c.BindJSON(&digitalTwinDto); err != nil {
-		log.Println(err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}
 
-	fmt.Println(digitalTwinDto)
 	additionalServices := []additionalservice.AdditionalService{}
 	router := gin.New()
 
 	anomalyServices := sensoranomalyhandler.InitAnomalyHandler(
 		mapAnomaliesDtoToAnomalies(digitalTwinDto.HandleableAnomalies),
 		router,
-		os.Getenv("SYSTEM_NAME"),
+		digitalTwinDto.SystemName,
 	)
 	additionalServices = append(additionalServices, anomalyServices...)
 
-	systemDefinition, err := controller.service.CreateDigitalTwin(mapDigitalTwinDtoToDigitalTwinModel(digitalTwinDto, additionalServices), uuid.New(), router)
+	systemDefinition, err := controller.service.CreateDigitalTwin(mapDigitalTwinDtoToDigitalTwinModel(digitalTwinDto, additionalServices), uuid.New(), digitalTwinDto.SystemName, router)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -87,4 +83,48 @@ func (controller *Controller) DeleteDigitalTwin(c *gin.Context) {
 	}
 
 	c.Status(http.StatusOK)
+}
+
+// Upload certificate files
+// @Summary      Upload certificate files as zip
+// @Description  Upload certificate files as zip, to be used by a digital twin. Takes cert.pem and key.pem files and gives `certId`.
+// @Tags         Management
+// @Produce      json
+// @Param        cert formData  file  true  "Cert file"
+// @Param        key formData  file  true  "Key file"
+// @Success      200 {object} CertificateDTO
+// @Router       /upload-certificates [post]
+func (controller *Controller) UploadCertificates(c *gin.Context) {
+
+	certFile, err := c.FormFile("cert")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	keyFile, err := c.FormFile("key")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+
+	CertificateModel := controller.service.UploadCertificates(certFile.Filename, keyFile.Filename)
+
+	err = c.SaveUploadedFile(certFile, CertificateModel.CertFilePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	log.Printf("saved cert file: %s\n", CertificateModel.CertFilePath)
+
+	err = c.SaveUploadedFile(keyFile, CertificateModel.KeyFilePath)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	log.Printf("saved key file: %s", CertificateModel.CertFilePath)
+
+	c.JSON(http.StatusOK, CertificateDTO{
+		CertificateId: CertificateModel.CertificateId.String(),
+	})
 }

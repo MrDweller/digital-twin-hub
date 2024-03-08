@@ -17,14 +17,14 @@ import (
 )
 
 type DigitalTwin struct {
-	DigitalTwinId       uuid.UUID
-	DigitalTwinModel    models.DigitalTwinModel
-	SystemDefinition    serviceModels.SystemDefinition
-	digitalTwinRegistry digitaltwinregistry.DigitalTwinRegistryConnection
-	server              httpserver.Server
+	DigitalTwinId                 uuid.UUID
+	DigitalTwinModel              models.DigitalTwinModel
+	SystemDefinition              serviceModels.SystemDefinition
+	digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection
+	server                        httpserver.Server
 }
 
-func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistryConnection digitaltwinregistry.DigitalTwinRegistryConnection, digitalTwinId uuid.UUID, router *gin.Engine) (*DigitalTwin, error) {
+func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistry digitaltwinregistry.DigitalTwinRegistry, digitalTwinId uuid.UUID, systemName string, router *gin.Engine) (*DigitalTwin, error) {
 	url := fmt.Sprintf("%s:0", os.Getenv("ADDRESS"))
 
 	connection, err := physicaltwinconnection.NewConnection(digitalTwinModel.PhysicalTwinConnectionModel)
@@ -55,22 +55,27 @@ func NewDigitalTwin(digitalTwinModel models.DigitalTwinModel, digitalTwinRegistr
 	systemDefinition := serviceModels.SystemDefinition{
 		Address:            address,
 		Port:               port,
-		SystemName:         os.Getenv("SYSTEM_NAME"),
+		SystemName:         systemName,
 		AuthenticationInfo: os.Getenv("AUTHENTICATION_INFO"),
 	}
 
+	digitalTwinRegistryConnection, err := digitaltwinregistry.NewConnection(digitalTwinRegistry)
+	if err != nil {
+		return nil, err
+	}
+
 	return &DigitalTwin{
-		DigitalTwinId:       digitalTwinId,
-		DigitalTwinModel:    digitalTwinModel,
-		digitalTwinRegistry: digitalTwinRegistryConnection,
-		SystemDefinition:    systemDefinition,
-		server:              server,
+		DigitalTwinId:                 digitalTwinId,
+		DigitalTwinModel:              digitalTwinModel,
+		digitalTwinRegistryConnection: digitalTwinRegistryConnection,
+		SystemDefinition:              systemDefinition,
+		server:                        server,
 	}, nil
 }
 
 func (digitalTwin *DigitalTwin) StartDigitalTwin() (*serviceModels.SystemDefinition, error) {
 
-	err := digitalTwin.digitalTwinRegistry.RegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.SystemDefinition)
+	err := digitalTwin.digitalTwinRegistryConnection.RegisterDigitalTwin(digitalTwin.DigitalTwinModel, digitalTwin.SystemDefinition)
 	if err != nil {
 		return nil, err
 	}

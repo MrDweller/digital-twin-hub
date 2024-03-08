@@ -77,9 +77,62 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/upload-certificates": {
+            "post": {
+                "description": "Upload certificate files as zip, to be used by a digital twin. Takes cert.pem and key.pem files and gives ` + "`" + `certId` + "`" + `.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Management"
+                ],
+                "summary": "Upload certificate files as zip",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Cert file",
+                        "name": "cert",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Key file",
+                        "name": "key",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/manufacturer.CertificateDTO"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "manufacturer.AnomalyDTO": {
+            "type": "object",
+            "properties": {
+                "anomalyType": {
+                    "type": "string",
+                    "default": "stuck"
+                }
+            }
+        },
+        "manufacturer.CertificateDTO": {
+            "type": "object",
+            "properties": {
+                "certificateId": {
+                    "type": "string"
+                }
+            }
+        },
         "manufacturer.ConnectionDTO": {
             "type": "object",
             "properties": {
@@ -109,6 +162,9 @@ const docTemplate = `{
         "manufacturer.DigitalTwinDTO": {
             "type": "object",
             "properties": {
+                "certificateId": {
+                    "type": "string"
+                },
                 "controlCommands": {
                     "type": "array",
                     "items": {
@@ -118,7 +174,7 @@ const docTemplate = `{
                 "handleableAnomalies": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/manufacturer.HandleableAnomalyDTO"
+                        "$ref": "#/definitions/manufacturer.AnomalyDTO"
                     }
                 },
                 "physicalTwinConnection": {
@@ -129,15 +185,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/manufacturer.SensedPropertyDTO"
                     }
-                }
-            }
-        },
-        "manufacturer.HandleableAnomalyDTO": {
-            "type": "object",
-            "properties": {
-                "anomalyType": {
-                    "type": "string",
-                    "default": "STUCK"
+                },
+                "systemName": {
+                    "type": "string"
                 }
             }
         },

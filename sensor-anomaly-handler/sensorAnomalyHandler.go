@@ -7,6 +7,7 @@ import (
 	additionalservice "github.com/MrDweller/digital-twin-hub/additional-service"
 	"github.com/MrDweller/service-registry-connection/models"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type SensorAnomalyHandler struct {
@@ -31,6 +32,7 @@ func InitAnomalyHandler(anomalies []Anomaly, router *gin.Engine, SystemName stri
 				anomalyHandlingSystem: handlingSystem,
 				Anomaly:               anomaly,
 			},
+			id: uuid.New(),
 		}
 
 		additionalServices = append(additionalServices, handleableAnomaly)

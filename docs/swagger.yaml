@@ -1,4 +1,15 @@
 definitions:
+  manufacturer.AnomalyDTO:
+    properties:
+      anomalyType:
+        default: stuck
+        type: string
+    type: object
+  manufacturer.CertificateDTO:
+    properties:
+      certificateId:
+        type: string
+    type: object
   manufacturer.ConnectionDTO:
     properties:
       connectionModel:
@@ -19,13 +30,15 @@ definitions:
     type: object
   manufacturer.DigitalTwinDTO:
     properties:
+      certificateId:
+        type: string
       controlCommands:
         items:
           $ref: '#/definitions/manufacturer.ControllCommandDTO'
         type: array
       handleableAnomalies:
         items:
-          $ref: '#/definitions/manufacturer.HandleableAnomalyDTO'
+          $ref: '#/definitions/manufacturer.AnomalyDTO'
         type: array
       physicalTwinConnection:
         $ref: '#/definitions/manufacturer.ConnectionDTO'
@@ -33,11 +46,7 @@ definitions:
         items:
           $ref: '#/definitions/manufacturer.SensedPropertyDTO'
         type: array
-    type: object
-  manufacturer.HandleableAnomalyDTO:
-    properties:
-      anomalyType:
-        default: STUCK
+      systemName:
         type: string
     type: object
   manufacturer.SensedPropertyDTO:
@@ -117,6 +126,31 @@ paths:
         "200":
           description: OK
       summary: Delete a digital twin
+      tags:
+      - Management
+  /upload-certificates:
+    post:
+      description: Upload certificate files as zip, to be used by a digital twin.
+        Takes cert.pem and key.pem files and gives `certId`.
+      parameters:
+      - description: Cert file
+        in: formData
+        name: cert
+        required: true
+        type: file
+      - description: Key file
+        in: formData
+        name: key
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/manufacturer.CertificateDTO'
+      summary: Upload certificate files as zip
       tags:
       - Management
 swagger: "2.0"
