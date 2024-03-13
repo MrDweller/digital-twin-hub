@@ -14,8 +14,8 @@ type NotifyAnomaly struct {
 func (notifyAnomaly *NotifyAnomaly) GetService() additionalservice.AdditionalServiceModel {
 	return additionalservice.AdditionalServiceModel{
 		ServiceDefinition: models.ServiceDefinition{
-			ServiceDefinition: notifyAnomaly.AnomalyType,
-			ServiceUri:        fmt.Sprintf("/notify/%s", notifyAnomaly.AnomalyType),
+			ServiceDefinition: notifyAnomaly.EventType,
+			ServiceUri:        fmt.Sprintf("/notify/%s", notifyAnomaly.EventType),
 		},
 		Interfaces: []string{
 			"HTTP-SECURE-JSON",

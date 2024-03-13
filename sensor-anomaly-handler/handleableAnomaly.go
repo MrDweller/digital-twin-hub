@@ -13,7 +13,7 @@ type HandleableAnomalyBase struct {
 func (handleableAnomalyBase *HandleableAnomalyBase) GetService() additionalservice.AdditionalServiceModel {
 	return additionalservice.AdditionalServiceModel{
 		ServiceDefinition: models.ServiceDefinition{
-			ServiceDefinition: handleableAnomalyBase.AnomalyType,
+			ServiceDefinition: handleableAnomalyBase.EventType,
 			ServiceUri:        "",
 		},
 		Interfaces: []string{

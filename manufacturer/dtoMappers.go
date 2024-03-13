@@ -5,7 +5,6 @@ import (
 	"github.com/MrDweller/digital-twin-hub/models"
 	sensoranomalyhandler "github.com/MrDweller/digital-twin-hub/sensor-anomaly-handler"
 	serviceModels "github.com/MrDweller/service-registry-connection/models"
-	"github.com/google/uuid"
 )
 
 func mapDigitalTwinDtoToDigitalTwinModel(digitalTwinDTO DigitalTwinDTO, additionalServices []additionalservice.AdditionalService) models.DigitalTwinModel {
@@ -17,10 +16,8 @@ func mapDigitalTwinDtoToDigitalTwinModel(digitalTwinDTO DigitalTwinDTO, addition
 
 	}
 
-	certificateId, _ := uuid.Parse(digitalTwinDTO.CertificateId)
-
 	return models.DigitalTwinModel{
-		CertificateId: certificateId,
+		CertificateId: digitalTwinDTO.CertificateId,
 
 		SensedProperties:        mapSensedPropertiesDtoToSensedPropertiesModel(digitalTwinDTO.SensedProperties),
 		ControlCommands:         mapControllCommandsDtoToControllCommandsModel(digitalTwinDTO.ControlCommands),
@@ -47,7 +44,7 @@ func mapAnomaliesDtoToAnomalies(anomaliesDTO []AnomalyDTO) []sensoranomalyhandle
 
 func mapAnomalyDtoToAnomaly(anomalyDTO AnomalyDTO) sensoranomalyhandler.Anomaly {
 	return sensoranomalyhandler.Anomaly{
-		AnomalyType: anomalyDTO.AnomalyType,
+		EventType: anomalyDTO.AnomalyType,
 	}
 }
 

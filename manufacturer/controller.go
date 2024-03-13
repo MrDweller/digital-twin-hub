@@ -43,11 +43,16 @@ func (controller *Controller) CreateDigitalTwin(c *gin.Context) {
 	additionalServices := []additionalservice.AdditionalService{}
 	router := gin.New()
 
-	anomalyServices := sensoranomalyhandler.InitAnomalyHandler(
+	anomalyServices, err := sensoranomalyhandler.InitAnomalyHandler(
 		mapAnomaliesDtoToAnomalies(digitalTwinDto.HandleableAnomalies),
 		router,
 		digitalTwinDto.SystemName,
+		digitalTwinDto.CertificateId,
 	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	additionalServices = append(additionalServices, anomalyServices...)
 
 	systemDefinition, err := controller.service.CreateDigitalTwin(mapDigitalTwinDtoToDigitalTwinModel(digitalTwinDto, additionalServices), uuid.New(), digitalTwinDto.SystemName, router)
@@ -125,6 +130,6 @@ func (controller *Controller) UploadCertificates(c *gin.Context) {
 	log.Printf("saved key file: %s", CertificateModel.CertFilePath)
 
 	c.JSON(http.StatusOK, CertificateDTO{
-		CertificateId: CertificateModel.CertificateId.String(),
+		CertificateId: CertificateModel.CertificateId,
 	})
 }

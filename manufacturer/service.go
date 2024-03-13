@@ -164,7 +164,7 @@ func (service Service) getSavedDigitalTwins(filter interface{}, opts ...*options
 }
 
 func (service Service) UploadCertificates(certFileName string, keyFileName string) models.CertificateModel {
-	certificateId := uuid.New()
+	certificateId := uuid.New().String()
 
 	certificateDirectoryPath := fmt.Sprintf("certificates/digital-twins/%s", certificateId)
 

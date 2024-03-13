@@ -1,5 +1,7 @@
 github.com/KyleBanks/depth v1.2.1 h1:5h8fQADFrWtarTdtDudMmGsC7GPbOAu6RVB3ffsVFHc=
 github.com/KyleBanks/depth v1.2.1/go.mod h1:jzSb9d0L43HxTQfT+oSA1EEp2q+ne2uh6XgeJcm8brE=
+github.com/MrDweller/orchestrator-connection v1.0.13 h1:iAlf274SCMNJpPAS3hUTQvZ38bYZ1+M/kT+PEjldDKM=
+github.com/MrDweller/orchestrator-connection v1.0.13/go.mod h1:gIzXE2JKyxtGe5ftzEN07B7XnsZCuSbzsH7OO6agiRA=
 github.com/MrDweller/service-registry-connection v1.0.4 h1:kmJql9R/o2RKFq7SNHolKwHqvj/taln4W1Kl5npMhpw=
 github.com/MrDweller/service-registry-connection v1.0.4/go.mod h1:werFDrDntle8VBpcVjyWQ+IzAJBGwv7vqpxWgf8/z1Q=
 github.com/MrDweller/service-registry-connection v1.0.6 h1:VEFBEV+a0NbU5Wt2u9Sp88OFKQ/roc2CRdWXFCHKvss=

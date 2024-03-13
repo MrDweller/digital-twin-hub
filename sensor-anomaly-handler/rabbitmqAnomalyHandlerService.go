@@ -25,7 +25,7 @@ type RabbitMQHandleableAnomaly struct {
 
 func (rabbitMQHandleableAnomaly *RabbitMQHandleableAnomaly) GetMetaData() map[string]string {
 	return map[string]string{
-		EXCHANGE: fmt.Sprintf("%s-%s", rabbitMQHandleableAnomaly.AnomalyType, rabbitMQHandleableAnomaly.id.String()),
+		EXCHANGE: fmt.Sprintf("%s-%s", rabbitMQHandleableAnomaly.EventType, rabbitMQHandleableAnomaly.id.String()),
 	}
 }
 
@@ -33,14 +33,14 @@ func (rabbitMQHandleableAnomaly *RabbitMQHandleableAnomaly) GetAnomaly() Anomaly
 	return rabbitMQHandleableAnomaly.Anomaly
 }
 
-func (service RabbitmqAnomalyHandlerService) HandleAnomaly(handleableAnomaly HandleableAnomaly) error {
+func (service RabbitmqAnomalyHandlerService) HandleAnomaly(handleableAnomaly HandleableAnomaly, work Work) error {
 	RabbitMQHandleableAnomaly := handleableAnomaly.(*RabbitMQHandleableAnomaly)
 	metadata := RabbitMQHandleableAnomaly.GetMetaData()
-	err := service.emit(handleableAnomaly.GetAnomaly(), metadata[EXCHANGE])
+	err := service.emit(handleableAnomaly.GetAnomaly(), metadata[EXCHANGE], work)
 	return err
 }
 
-func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly, exchange string) error {
+func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly, exchange string, work Work) error {
 	conn, err := amqp.Dial(fmt.Sprintf("amqp://guest:guest@%s:%d/", service.rabbitmqAddress, service.rabbitmqPort))
 	if err != nil {
 		log.Printf("%s: %s", "Failed to connect to RabbitMQ", err)
@@ -72,7 +72,11 @@ func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly, exchange stri
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	data, err := json.Marshal(anomaly)
+	eventDTO := EventDTO{
+		Anomaly: anomaly,
+		Work:    work,
+	}
+	data, err := json.Marshal(eventDTO)
 	if err != nil {
 		log.Printf("%s: %s", "Failed to marshal the anomaly", err)
 		return err
@@ -93,6 +97,6 @@ func (service RabbitmqAnomalyHandlerService) emit(anomaly Anomaly, exchange stri
 		return err
 	}
 
-	log.Printf(" [x] Sent %s", anomaly.AnomalyType)
+	log.Printf(" [x] Sent %s", anomaly.EventType)
 	return nil
 }
